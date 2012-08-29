@@ -37,21 +37,25 @@ def convert_to_srt(ass_file):
         ^Dialogue:\s\d,
         (\d+:\d\d:\d\d.\d\d),   # start
         (\d+:\d\d:\d\d.\d\d),   # end
-        (?:[^,]*,){6}(?:\{[^}]+\})?
+        (?:[^,]*,){6}
         (.*)$                   # text
         ''')
 
     # 用于将\N\n转换为换行符
     re_newline = re.compile(r'(?i)\\n')
+    # 删除各种特效
+    re_special_char = re.compile(r'\{[^}]+\}')
 
     def ass2srt(line, cnt=[-1], CONN=' --> ', LF='\n'):
         """convert ass to srt"""
         m = re_ass.match(line)
         if not m: return ''
         cnt[0] += 1
+        text = re_special_char.sub('', m.group(3))
+        text = re_newline.sub('\n', text)
         return str(cnt[0]) + LF + \
                 m.group(1) + CONN + m.group(2) + LF + \
-                re_newline.sub('\n', m.group(3)) + LF*2
+                text + LF*2
 
     # 读取ass文件并写入srt文件
     with open(srt_name, 'w') as srt:
