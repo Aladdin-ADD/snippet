@@ -10,11 +10,10 @@ import re
 
 def main():
     # 少了ass参数 或 ass文件不存在
-    # 提示并返回
+    # 提示并退出
     if len(sys.argv) == 1 or \
        not os.path.exists(sys.argv[1]):
-        print 'miss ass file argument OR ass file not exist'
-        return
+        sys.exit('... miss argument OR subtitle file not exist')
 
     # 将ass转换为srt
     convert_to_srt(sys.argv[1])
