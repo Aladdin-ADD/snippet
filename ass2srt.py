@@ -20,7 +20,7 @@ def main():
 
 def convert_to_srt(ass_file):
     # srt文件名
-    srt_name = os.path.basename(ass_file).replace('.ass','') + '.srt'
+    srt_name = os.path.basename(ass_file).replace('.ass','.srt')
     # srt文件已存在时 覆盖或是重命名srt文件
     if os.path.exists(srt_name):
         print '... ' + srt_name + ' exist!\n... overwrite it? [y/n]'
