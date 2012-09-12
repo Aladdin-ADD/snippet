@@ -1,4 +1,3 @@
-//把verycd页面里的ed2k连接提取出来
 javascript: (function() {
 	var n2 = document.querySelectorAll('td.post2');
 	var n1 = document.querySelectorAll('td.post');
