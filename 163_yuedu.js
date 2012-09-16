@@ -1,56 +1,11 @@
 javascript: (function() {
 	'use strict';
 
-	/*base64解码 http://www.webtoolkit.info/javascript-base64.html*/
-	var Base64 = {
-		_keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-		decode: function(input) {
-			var output = "";
-			var chr1, chr2, chr3;
-			var enc1, enc2, enc3, enc4;
-			var i = 0;
-			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-			while (i < input.length) {
-				enc1 = this._keyStr.indexOf(input.charAt(i++));
-				enc2 = this._keyStr.indexOf(input.charAt(i++));
-				enc3 = this._keyStr.indexOf(input.charAt(i++));
-				enc4 = this._keyStr.indexOf(input.charAt(i++));
-				chr1 = (enc1 << 2) | (enc2 >> 4);
-				chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-				chr3 = ((enc3 & 3) << 6) | enc4;
-				output = output + String.fromCharCode(chr1);
-				if (enc3 != 64) {
-					output = output + String.fromCharCode(chr2);
-				}
-				if (enc4 != 64) {
-					output = output + String.fromCharCode(chr3);
-				}
-			}
-			output = Base64._utf8_decode(output);
-			return output;
-		},
-		_utf8_decode: function(utftext) {
-			var string = "";
-			var i = 0;
-			var c = 0, c1 = 0,  c2 = 0, c3 = 0;
-			while (i < utftext.length) {
-				c = utftext.charCodeAt(i);
-				if (c < 128) {
-					string += String.fromCharCode(c);
-					i++;
-				} else if ((c > 191) && (c < 224)) {
-					c2 = utftext.charCodeAt(i + 1);
-					string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
-					i += 2;
-				} else {
-					c2 = utftext.charCodeAt(i + 1);
-					c3 = utftext.charCodeAt(i + 2);
-					string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
-					i += 3;
-				}
-			}
-			return string;
-		},
+	/*好像大部分浏览器都实现了atob这个函数，直接用了。
+	有问题去翻一下之前的版本，用js解码base64的。
+	decodeURIComponent和escape能解决乱码问题，mdn上找的。*/
+	var base64decode = function(data) {
+		return decodeURIComponent(escape(window.atob(data)));
 	};
 
 	/*xhr get请求 返回json*/
@@ -68,11 +23,12 @@ javascript: (function() {
 
 	/*获取正文*/
 	var content_get = function(src) {
-		var re_content = /(?:<p>([^<]+)<\/p>)|(?:<span[^>]+>([^<]+)<\/span>)/g;
+		var s = src.replace(/<\/?span[^>]*>/ig, '');
+		var re_content = /<p[^>]*>([^<]+)<\/p>/g;
 		var tmp = '';
 		var m;
-		while(m = re_content.exec(src)) {
-			tmp += (m[1] || m[2]) + '\n';
+		while(m = re_content.exec(s)) {
+			tmp += m[1] + '\n';
 		}
 		return tmp;
 	};
@@ -103,7 +59,7 @@ javascript: (function() {
 				ch_url += '&articleUuid=' + chapter.id;
 				ch_url += '&bigContentId=' + chapter.bigContentId;
 				var ch_json = xhr_get(ch_url);
-				var ch_src = Base64.decode(ch_json.content);
+				var ch_src = base64decode(ch_json.content);
 				var ch_data = content_get(ch_src);
 				this.add(ch_data);
 			},
