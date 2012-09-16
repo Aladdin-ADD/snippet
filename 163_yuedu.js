@@ -77,49 +77,53 @@ javascript: (function() {
 		return tmp;
 	};
 
-	/*从url获取图书id*/
-	var book_url = window.location.href;
-	var re_book_id = /([-_a-z0-9]+)\/?$/;
-	var book_id = re_book_id.exec(book_url)[1];
+	var get_book = function() {
+		/*从url获取图书id*/
+		var book_url = window.location.href;
+		var re_book_id = /([-_a-z0-9]+)\/?$/;
+		var book_id = re_book_id.exec(book_url)[1];
 
-	/*获取图书章节id json*/
-	var book_info_url = 'http://yuedu.163.com/getBook.do?id=' + book_id + '&curChapter=&tradeId=';
-	var book_info = xhr_get(book_info_url);
+		/*获取图书章节id json*/
+		var book_info_url = 'http://yuedu.163.com/getBook.do?curChapter=&tradeId=&id=' + book_id;
+		var book_info = xhr_get(book_info_url);
 
-	/*获取图书内容*/
-	var text = {
-		'txt': book_info.title + '\n' + book_info.author + '\n\n\n',
-		'output': function() {
-			document.write(this.txt.replace(/\n/g, '<br />'));
-		},
-		'add': function(t) {
-			this.txt += t + '\n\n';
-		},
-		'addChapter': function(chapter) {
-			var ch_url = 'http://yuedu.163.com/getChapterContent.do';
-			ch_url += '?sourceUuid=' + book_info.id;
-			ch_url += '&articleUuid=' + chapter.id;
-			ch_url += '&bigContentId=' + chapter.bigContentId;
-			var ch_json = xhr_get(ch_url);
-			var ch_src = Base64.decode(ch_json.content);
-			var ch_data = content_get(ch_src);
-			this.add(ch_data);
-		},
+		/*获取图书内容*/
+		var text = {
+			'txt': book_info.title + '\n' + book_info.author + '\n\n',
+			'output': function() {
+				var pop_window = window.open('', 'content', 'height=400, width=840, scrollbars=yes');
+				pop_window.document.write(this.txt.replace(/\n/g, '<br />'));
+			},
+			'add': function(t) {
+				this.txt += t + '\n';
+			},
+			'addChapter': function(chapter) {
+				var ch_url = 'http://yuedu.163.com/getChapterContent.do';
+				ch_url += '?sourceUuid=' + book_info.id;
+				ch_url += '&articleUuid=' + chapter.id;
+				ch_url += '&bigContentId=' + chapter.bigContentId;
+				var ch_json = xhr_get(ch_url);
+				var ch_src = Base64.decode(ch_json.content);
+				var ch_data = content_get(ch_src);
+				this.add(ch_data);
+			},
+		};
+
+		/*卷*/
+		for (var i = 0, plen = book_info.portions.length; i < plen; ++i) {
+			var vol = book_info.portions[i];
+			text.add(vol.title + '\n' + vol.introduction + '\n');
+			/*章*/
+			for (var j = 0, clen = vol.chapter.length; j < clen; ++j) {
+				var ch = vol.chapter[j];
+				text.add(ch.title);
+				text.addChapter(ch);
+			}
+		}
+
+		/*输出*/
+		text.output();
 	};
 
-	/*卷*/
-	for (var i = 0, plen = book_info.portions.length; i < plen; ++i) {
-		var vol = book_info.portions[i];
-		text.add(vol.title);
-		text.add(vol.introduction);
-		/*章*/
-		for (var j = 0, clen = vol.chapter.length; j < clen; ++j) {
-			var ch = vol.chapter[j];
-			text.add(ch.title);
-			text.addChapter(ch);
-		}
-	}
-
-	/*输出*/
-	text.output();
+	get_book();
 })()
