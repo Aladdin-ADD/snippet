@@ -24,7 +24,7 @@ javascript: (function() {
 	/*获取正文*/
 	var content_get = function(src) {
 		var s = src.replace(/<\/?span[^>]*>/ig, '');
-		var re_content = /<p[^>]*>([^<]+)<\/p>/g;
+		var re_content = /<p[^>]*>([^<]+)<\/p>/ig;
 		var tmp = '';
 		var m;
 		while(m = re_content.exec(s)) {
