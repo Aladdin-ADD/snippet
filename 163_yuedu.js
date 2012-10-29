@@ -1,9 +1,11 @@
 javascript: (function() {
 	'use strict';
 
-	/*好像大部分浏览器都实现了atob这个函数，直接用了。
-	有问题去翻一下之前的版本，用js解码base64的。
-	decodeURIComponent和escape能解决乱码问题，mdn上找的。*/
+	/*
+	 * 好像大部分浏览器都实现了atob这个函数，直接用了。
+	 * 有问题去翻一下之前的版本，用js解码base64的。
+	 * decodeURIComponent和escape能解决乱码问题，mdn上找的。
+	 */
 	var base64decode = function(data) {
 		return decodeURIComponent(escape(window.atob(data)));
 	};
