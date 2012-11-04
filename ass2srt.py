@@ -5,7 +5,7 @@ import sys
 import re
 
 # FIXME
-# throw error when open utf-16 file
+# error while open utf-16 file
 
 def convert(ass_file, srt_file):
     re_ass = re.compile(
