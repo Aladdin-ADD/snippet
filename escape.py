@@ -48,5 +48,6 @@ def main():
         s = escape(input('>>> '))
     print(s)
 
+
 if __name__ == '__main__':
     main()
