@@ -5,8 +5,8 @@
  *
  * Syntax:
  * {{ expression }}
+ * NOTE: if statement only support `comparison operators` now.
  * {% if expression %}... {% else if expression %}... {% else %}... {% end %}
- * NOTE: if statement does not support function in expression now.
  * {% for index in list %}... {{ list[index] }}... {% end %}
  * {% for key in object %}... {{ object[key] }}... {% end %}
  */
@@ -14,42 +14,42 @@
 (function() {
 	'use strict';
 
-	var tmpl = function(str) {
+	var compile = function(str) {
 		var reExpression = /["'.[\]]+/g;
 		var reOperator = /([=!]=|[><])=?/; // ==,===,!=,!==,>,>=,<,<=
-		var reConstant = /\d+|('|")[^\1]+\1/;
+		var reConstant = /\d+|('|")[^\1]+\1|([=!]=|[><])=?/;
+		var reSpace = /\s+/g;
+		var reStatement = /^\s*(if|else if|for)\s+/i;
+		
 		var compiled = 'var s="";';
 		var addText = function(text) {
 			compiled += 's+="' + text + '";';
 		};
-		var addE = function(s) {
+		var parseExpression = function(s) {
 			var e = s.replace(reExpression, ' ').trim().split(' ');
-			compiled += 'namespace';
-			while (e.length) compiled += '["' + e.shift() + '"]';
+			var ret = 'namespace';
+			while (e.length) ret += '["' + e.shift() + '"]';
+			return ret;
 		};
-		var addExpression = function(expression) {
-			compiled += 's+=';
-			addE(expression);
-			compiled += ';';
+		var addExpression = function(e) {
+			compiled += 's+=' + parseExpression(e) + ';';
 		};
-		var addIf = function(statement) {
-			compiled += 'if(';
-			var s = statement.slice(1);
+		var addIf = function(s, e) {
+			s = s.replace(reSpace, '').replace(reOperator, ' $& ').split(' ');
 			if (s.length === 1) {
-				s = s[0].replace(reOperator, ' $& ').split(' ');
-				if (s.length === 1) {
-					addE(s[0]);
-					compiled += '){';
-					return;
-				}
+				compiled += 'if(' + parseExpression(s[0]) + '){';
+				return;
 			}
-			reConstant.test(s[0]) ? compiled += s[0] : addE(s[0]);
-			compiled += s[1];
-			reConstant.test(s[2]) ? compiled += s[2] : addE(s[2]);
-			compiled += '){';
+			for(var i = 0, l = s.length; i<l; i++) {
+				s[i] = reConstant.test(s[i]) ? s[i] : parseExpression(s[i]);
+			}
+			compiled += (e ? '}else if(' : 'if(') + s.join('') + '){';
 		};
 		var addElse = function() {
 			compiled += '}else{';
+		};
+		var addFor = function(s) {
+			s = s.split(reSpace);
 		};
 		var addEnd = function() {
 			compiled += '}';
@@ -58,13 +58,16 @@
 			compiled += 'return s;';
 		};
 		var parse = function(str, start) {
-			var s = start || 0;
-			var i = 0, j = 0, c = undefined;
-			var expression = undefined, statement = undefined;
-			while (true) {
+			// 用于确定循环
+			var len = str.length, s = start || 0, i = 0, j = 0, c = undefined;
+			// 用于获取表达式
+			var expression = undefined;
+			// 用于判断语句类型
+			var statement = undefined, keyword = undefined;
+			while (s < len) {
 				i = str.indexOf('{', s);
 				if (i === -1) {
-					if (s !== str.length) addText(str.substring(s));
+					addText(str.substring(s));
 					break;
 				}
 				if (i > s) addText(str.substring(s, i));
@@ -88,18 +91,17 @@
 						// {% else %}
 						addElse();
 					} else {
-						statement = statement.split(' ');
-						if (statement[0] === 'if') {
-							// {% if ... %}
+						statement = statement.replace(reSpace, ' ');
+						keyword = reStatement.exec(statement)[1];
+						statement = statement.replace(keyword, '');
+						if (keyword === 'if') {
 							addIf(statement);
-						} else if (statement[0] === 'else') {
-							// {% else if ...%}
-							addElseIf(statement);
-						} else if (statement[0] === 'for') {
-							// {% for i in l %}
+						} else if (keyword === 'else if') {
+							addIf(statement, true);
+						} else if (keyword === 'for') {
 							addFor(statement);
 						} else {
-							throw new SyntaxError('unknown keyword');
+							throw new SyntaxError(keyword + ': unknown');
 						}
 					}
 					s = j + 2;
@@ -111,16 +113,12 @@
 			addReturn();
 		};
 		parse(str);
-		return new Function('namespace', compiled);
+		//console.log(compiled);
+		return compiled;
 	};
-
+	
 	var template = function(str) {
-		var execute = tmpl(str);
-		console.log(execute);
-		var generate = function(data) {
-			return execute(data);
-		};
-		return {'generate': generate};
+		return {'generate': new Function('namespace', compile(str))};
 	};
 
 	window.template = template;
@@ -129,7 +127,7 @@
 
 var test = function() {
 	function equal(input, output, data) {
-		var o = template(input).generate(data);
+		var o = template(input).generate(data || {});
 		if (o === output) {
 			console.log('PASS');
 			console.log('\n');
@@ -153,21 +151,31 @@ var test = function() {
 		equal("hello, {{ data['world'] }}!", oo, {'data': {'world':'world'}});
 		equal('hello, {{ data["world"] }}!', oo, {'data': {'world':'world'}});
 	};
-	//et();
 
 	// if statement test
 	var ift = function() {
-		var t = template('{% if a>1 %} <html> {% end %}');
-		console.log(t.generate({'a':'test'}));
-		t = template('{% if a %} <html> {% end %}');
-		console.log(t.generate({'a':'test'}));
-		t = template('{% if a==="test" %} <html> {% end %}');
-		console.log(t.generate({'a':'test'}));
-		t = template('{% if a!=="test" %} <html> {% end %}');
-		console.log(t.generate({'a':'test'}));
-		t = template('{% if a <= "test" %} <html> {% end %}');
-		console.log(t.generate({'a':'test'}));
+		var ii = '{%   if   s   ==1 %}one' +
+			'{% else if   s===2 %}two' +
+			'{% else   if s ==3%}three' +
+			'{%   else if s== 4%}four' +
+			'{%   else   if s<6   %}five' +
+			'{%   else   if s<=6   %}six' +
+			'{% else if s<= 7 %}seven' +
+			'{% else if s !== 9 %}eight' +
+			'{% else %}nine{%end%}';
+		equal(ii, 'one', {'s': 1});
+		equal(ii, 'two', {'s': 2});
+		equal(ii, 'three', {'s': 3});
+		equal(ii, 'four', {'s': 4});
+		equal(ii, 'five', {'s': 5});
+		equal(ii, 'six', {'s': 6});
+		equal(ii, 'seven', {'s': 7});
+		equal(ii, 'eight', {'s': 8});
+		equal(ii, 'nine', {'s': 9});
 	};
+	
+	
+	et();
 	ift();
 };
 test();
