@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """singleton
-via <http://www.python.org/dev/peps/pep-0318/#examples>
+
+<http://www.python.org/dev/peps/pep-0318/#examples>
 """
 
 

@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """coroutine wrapper
-from <http://www.dabeaz.com/talks.html> and modified slightly.
+
+<http://www.dabeaz.com/talks.html>, modified slightly.
 """
 
 from functools import wraps

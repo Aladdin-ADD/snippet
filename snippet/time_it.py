@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """how to use timeit
+
 % python -m timeit -r 1 -n 10000 "from time_it import main" "main()"
 """
 
