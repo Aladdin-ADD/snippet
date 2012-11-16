@@ -1,3 +1,10 @@
+# 2012/11/15
+
+### snippet/javascript/mouse_direction.js
+怎么计算的需要仔细看一下……
+
+------
+
 # 2012/11/8
 
 ### template.js
