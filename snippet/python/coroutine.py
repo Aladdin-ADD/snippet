@@ -11,8 +11,8 @@ from functools import wraps
 
 def coroutine(func):
     @wraps(func)
-    def start(*args, **kwargs):
-        f = func(*args, **kwargs)
-        next(f)
-        return f
-    return start
+    def wrapper(*args, **kwargs):
+        co = func(*args, **kwargs)
+        next(co)
+        return co
+    return wrapper

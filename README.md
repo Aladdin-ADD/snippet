@@ -1,7 +1,8 @@
-+ 163_yuedu.js 将网易云阅读里的书本内容提取出来。
 + ass2srt.py 把 ass 字幕转换成 srt 字幕。
 + github_print.js 打印 github 的代码用的 bookmarklet。
 + verycd.js 输出 verycd 页面的全部 ed2k 链接，现在没什么用了……
++ yuedu.js 将网易云阅读里的书本内容提取出来。
++ yuedu.py 下载网易云阅读的脚本。
 
 ------
 
