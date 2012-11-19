@@ -6,6 +6,7 @@ import re
 import json
 from urllib.request import urlopen
 from base64 import b64decode
+from concurrent import futures
 
 from bs4 import BeautifulSoup
 
@@ -30,12 +31,21 @@ def get_chapter(ch):
 
 
 def get_book(book_id):
-    j_book = get_json(prefix_book + book_id)
     global prefix_chapter
     prefix_chapter += book_id
-    with open(j_book["author"] + " - " + j_book["title"] + '.txt', "w") as f:
-        for portion in j_book["portions"]:
-            f.writelines(get_chapter(portion))
+
+    j_book = get_json(prefix_book + book_id)
+
+    portions = j_book["portions"]
+    contents = [None] * len(portions)
+
+    with futures.ProcessPoolExecutor() as executor:
+        it = zip(range(len(portions)), executor.map(get_chapter, portions))
+        for index, text in it:
+            contents[index] = text
+
+    with open(j_book["title"] + ".txt", "w") as f:
+        f.writelines(contents)
 
 
 def main():

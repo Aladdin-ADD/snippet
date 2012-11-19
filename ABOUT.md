@@ -1,3 +1,11 @@
+# 2012/11/19
+
+### yuedu.py
+用 concurrent.futures 改了下，速度快了一点点……
+想改成异步下载。
+
+------
+
 # 2012/11/18
 
 ### yuedu.py yuedu.js
