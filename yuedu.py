@@ -36,16 +36,10 @@ def get_book(book_id):
 
     j_book = get_json(prefix_book + book_id)
 
-    portions = j_book["portions"]
-    contents = [None] * len(portions)
-
     with futures.ProcessPoolExecutor() as executor:
-        it = zip(range(len(portions)), executor.map(get_chapter, portions))
-        for index, text in it:
-            contents[index] = text
-
-    with open(j_book["title"] + ".txt", "w") as f:
-        f.writelines(contents)
+        with open(j_book["title"] + ".txt", "w") as f:
+            for text in executor.map(get_chapter, j_book["portions"]):
+                f.write(text)
 
 
 def main():
