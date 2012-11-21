@@ -6,7 +6,6 @@ import re
 import json
 from urllib.request import urlopen
 from base64 import b64decode
-from concurrent import futures
 
 from bs4 import BeautifulSoup
 
@@ -20,50 +19,39 @@ re_bookid = re.compile(
     """)
 
 
-def get_id(url):
-    r = re_bookid.match(url)
-    if not r:
-        sys.exit("unknown url: " + url)
-    else:
-        return r.group(1)
-
-
 def get_json(url):
     with urlopen(url) as src:
         return json.loads(src.read().decode())
 
 
-class Yuedu():
-    def __init__(self, url):
-        book_id = get_id(url)
+def get_book(url):
+    match = re_bookid.match(url)
+    if not match:
+        print("unknown url: " + url)
+        return
 
-        self.book_url = (
-            "http://yuedu.163.com/getBook.do?curChapter=&tradeId=&id="
-            + book_id)
+    book_url = (
+        "http://yuedu.163.com/getBook.do?curChapter=&tradeId=&id=" +
+        match.group(1))
+    chapter_url = (
+        "http://yuedu.163.com/getChapterContent.do?sourceUuid=" +
+        match.group(1))
 
-        self.chapter_url = (
-            "http://yuedu.163.com/getChapterContent.do?sourceUuid="
-            + book_id)
+    j_book = get_json(book_url)
 
-    def get_chapter(self, chapter):
-        url = (self.chapter_url
-               + "&articleUuid=" + chapter["id"]
-               + "&bigContentId=" + chapter["bigContentId"])
+    with open(j_book["title"] + ".txt", "w") as f:
+        for text in get_chapters(chapter_url, j_book["portions"]):
+            f.write(text)
+
+def get_chapters(prefix, portions):
+    for portion in portions:
+        url = (prefix
+             + "&articleUuid=" + portion["id"]
+             + "&bigContentId=" + portion["bigContentId"])
+
         j_chapter = get_json(url)
         soup = BeautifulSoup(b64decode(j_chapter["content"]))
-        return soup.text
-
-    def get_book(self, portions):
-        with futures.ThreadPoolExecutor(max_workers=2) as executor:
-            yield from executor.map(self.get_chapter, portions)
-
-    def download(self):
-        j_book = get_json(self.book_url)
-        with open(j_book["title"] + ".txt", "w") as f:
-            for text in self.get_book(j_book["portions"]):
-                f.write(text)
-
-        print(j_book["title"] + " download.")
+        yield soup.text
 
 
 def main():
@@ -72,7 +60,7 @@ def main():
         return
 
     for url in sys.argv[1:]:
-        Yuedu(url).download()
+        get_book(url)
 
 
 if __name__ == "__main__":
