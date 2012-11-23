@@ -1,3 +1,16 @@
+# 2012/11/23
+
+### yuedu.py
+下载速度大约快了一倍。暂时放下吧。
+
+### asynclient.py
+快两倍的根源，使用 epoll 异步下载，回调函数用个闭包，逻辑还算可以吧。
+
+### snippet/python/chunked.py
+用来处理`Transfer-Encoding: chunked`的情况，从 asynclient.py 里剥出来的。
+
+------
+
 # 2012/11/21
 
 ### yuedu.py
