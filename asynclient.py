@@ -3,6 +3,8 @@
 
 """A (too) simple asynchronous http client (use epoll).
 
+not support https.
+
 Usage:
 ```python
 from asynclient import asynclient
@@ -245,6 +247,8 @@ class Response():
         self.headers = {}
         for header_line in headers:
             k, v = header_line.split(": ")
+            if k == "Set-Cookie" and k in self.headers:
+                self.headers[k] += ";" + v
             self.headers[k] = v
 
         if self.headers.get("Transfer-Encoding", "") == "chunked":
