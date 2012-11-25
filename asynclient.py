@@ -68,7 +68,7 @@ from io import BytesIO
 
 READ = select.EPOLLIN
 WRITE = select.EPOLLOUT
-HUP = select.EPOLLHUP
+STOP = select.EPOLLHUP | select.EPOLLERR
 
 
 CLIENT = namedtuple(
@@ -88,50 +88,6 @@ re_url = re.compile(
     """)
 
 
-def _parse_url(url):
-    """parse url, return (host, port, path)."""
-    m = re_url.match(url)
-    if not m:
-        raise ValueError("invalid url: " + url)
-
-    r = urlparse(url)
-
-    path = r.path
-    if r.query:
-        path += "?" + r.query
-
-    return (r.hostname, r.port or DRFAULT_PORT[r.scheme], path or "/")
-
-
-
-
-def _create_socket(host, port):
-    """create non-blocking socket connection"""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((host, port))
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.setblocking(0)
-    return s
-
-
-
-
-def _handle_chunked(data):
-    data_buffer = BytesIO()
-    while data:
-        head, tail = data.split(b"\r\n", maxsplit=1)
-
-        index = head.find(b"(")
-        if index != -1:
-            head = int(head[:index], 16)
-        else:
-            head = int(head, 16)
-
-        data_buffer.write(tail[:head])
-        data = tail[head + 2:]
-    return data_buffer.getvalue()
-
-
 
 
 class asynclient():
@@ -141,20 +97,58 @@ class asynclient():
         self.epoll = select.epoll()
 
 
-    def _add_client(self, method, url, body, headers, callback, redirection):
-        (host, port, path) = _parse_url(url)
+    def _parse_url(self, url):
+        """parse url, return (host, port, path)."""
+        m = re_url.match(url)
+        if not m:
+            raise ValueError("invalid url: " + url)
 
-        client_socket = _create_socket(host, port)
+        r = urlparse(url)
+
+        path = r.path
+        if r.query:
+            path += "?" + r.query
+
+        return (r.hostname, r.port or DRFAULT_PORT[r.scheme], path or "/")
+
+
+    def _create_socket(self, host, port):
+        """create non-blocking socket connection"""
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((host, port))
+        #s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.setblocking(0)
+        return s
+
+
+    def _add_client(self, method, url, body, headers, callback, redirection):
+        """add client to task list"""
+        # create client
+        (host, port, path) = self._parse_url(url)
+
+        client_socket = self._create_socket(host, port)
 
         headers["Host"] = host + ":" + str(port)
-        request = Request(method, path, body, headers)
+        request = Request(method, path, headers, body)
 
+        # add client to task list and register to epoll
         fileno = client_socket.fileno()
 
         self.clients[fileno] = CLIENT(
             client_socket, request, BytesIO(), callback, redirection)
 
         self.epoll.register(fileno, WRITE)
+
+
+    def _response_handle(self, client):
+        """callback or redirect"""
+        response = Response(client.request, client.response.getvalue())
+        r = response.redirection(client.redirection)
+
+        if r:
+            self._add_client(callback=client.callback, **r)
+        else:
+            client.callback(response)
 
 
     def get(self, url, callback, headers={}, redirection=5):
@@ -167,21 +161,18 @@ class asynclient():
                          callback=callback, redirection=redirection)
 
 
-    def _response_handle(self, client):
-        response = Response(client.request, client.response.getvalue())
-        r = response.redirection(client.redirection)
-
-        if r:
-            self._add_client(callback=client.callback, **r)
-        else:
-            client.callback(response)
+    def close(self):
+        """close epoll and sockets"""
+        self.epoll.close()
+        for client in self.clients.values():
+            client.socket.close()
 
 
     def loop(self):
+        """start loop"""
         try:
             while len(self.clients):
-                p = self.epoll.poll()
-                for fileno, event in p:
+                for fileno, event in self.epoll.poll():
                     client = self.clients[fileno]
 
                     if event & WRITE:
@@ -198,20 +189,18 @@ class asynclient():
                             client.socket.shutdown(socket.SHUT_RDWR)
                             self._response_handle(client)
 
-                    elif event & HUP:
+                    elif event & STOP:
                         self.epoll.unregister(fileno)
                         client.socket.close()
                         del self.clients[fileno]
         finally:
-            self.epoll.close()
-            for client in self.clients.values():
-                client.socket.close()
+            self.close()
 
 
 
 
 class Request():
-    def __init__(self, method, path, body, headers):
+    def __init__(self, method, path, headers, body):
         self.http = "HTTP/1.1"
         self.method = method
         self.path = path
@@ -242,7 +231,8 @@ class Response():
 
         headers = header_data.decode().split("\r\n")
 
-        self.http, self.status_code, _ = headers.pop(0).split(maxsplit=2)
+        self.http, self.status_code, self.status = (
+            headers.pop(0).split(maxsplit=2))
 
         self.headers = {}
         for header_line in headers:
@@ -252,10 +242,28 @@ class Response():
             self.headers[k] = v
 
         if self.headers.get("Transfer-Encoding", "") == "chunked":
-            self.body = _handle_chunked(self.body)
+            self.body = self._chunked_handle(self.body)
+
+
+    def _chunked_handle(self, data):
+        """decode chunked data"""
+        data_buffer = BytesIO()
+        while data:
+            head, tail = data.split(b"\r\n", maxsplit=1)
+
+            index = head.find(b"(")
+            if index != -1:
+                head = int(head[:index], 16)
+            else:
+                head = int(head, 16)
+
+            data_buffer.write(tail[:head])
+            data = tail[head + 2:]
+        return data_buffer.getvalue()
 
 
     def redirection(self, redirection):
+        """redirect or not"""
         if redirection and "300" <= self.status_code < "400":
             url = self.headers.get("Location", "")
             if url:

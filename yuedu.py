@@ -33,14 +33,13 @@ def get_text(container, index):
 def get_chapters(chapter_prefix, client, container):
     def cb(response):
         j_book = json.loads(response.body.decode())
-        chapter_content = [None] * len(j_book["portions"])
-        cnt = 0
-        for portion in j_book["portions"]:
+        length = len(j_book["portions"])
+        chapter_content = [None] * length
+        for i, portion in zip(range(length), j_book["portions"]):
             url = (chapter_prefix
                    + "&articleUuid=" + portion["id"]
                    + "&bigContentId=" + portion["bigContentId"])
-            client.get(url, callback=get_text(chapter_content, cnt))
-            cnt += 1
+            client.get(url, callback=get_text(chapter_content, i))
         container.append({"title": j_book["title"], "texts":chapter_content})
     return cb
 
@@ -48,8 +47,7 @@ def get_chapters(chapter_prefix, client, container):
 
 
 def get_book(urls):
-    book_client = asynclient()
-    chapter_client = asynclient()
+    client = asynclient()
 
     book_prefix = "http://yuedu.163.com/getBook.do?curChapter=&tradeId=&id="
     chapter_prefix = "http://yuedu.163.com/getChapterContent.do?sourceUuid="
@@ -59,17 +57,16 @@ def get_book(urls):
     for url in urls:
         match = re_bookid.match(url)
         if match:
-            book_client.get(
+            client.get(
                 book_prefix + match.group(1),
                 callback=get_chapters(
                     chapter_prefix + match.group(1),
-                    chapter_client,
+                    client,
                     book_list))
         else:
             print("invalid url: " + url)
 
-    book_client.loop()
-    chapter_client.loop()
+    client.loop()
 
     for book in book_list:
         with open(book["title"] + ".txt", "w") as f:
