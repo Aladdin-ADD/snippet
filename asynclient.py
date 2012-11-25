@@ -53,8 +53,8 @@ client2.post(url, data=b"", callback=lambda x: print(x), redirection=10)
 
 
 # start tasks.
-client2.loop()
-client1.loop()
+client2.start()
+client1.start()
 ```
 """
 
@@ -69,6 +69,10 @@ from io import BytesIO
 READ = select.EPOLLIN
 WRITE = select.EPOLLOUT
 STOP = select.EPOLLHUP | select.EPOLLERR
+
+
+TASK = namedtuple(
+    "task", ["method", "url", "body", "headers", "callback", "redirection"])
 
 
 CLIENT = namedtuple(
@@ -92,9 +96,8 @@ re_url = re.compile(
 
 class asynclient():
     def __init__(self):
-        """create epoll and client dict"""
-        self.clients = {} # tasks dict, use fileno as key.
-        self.epoll = select.epoll()
+        self.tasks = []
+        self.clients = {}
 
 
     def _parse_url(self, url):
@@ -121,23 +124,81 @@ class asynclient():
         return s
 
 
-    def _add_client(self, method, url, body, headers, callback, redirection):
-        """add client to task list"""
-        # create client
-        (host, port, path) = self._parse_url(url)
+    def _create_clients(self):
+        """create client and clear self.tasks"""
+        for task in self.tasks:
+            self._create_client(task)
+        self.tasks.clear()
+
+
+    def _create_client(self, task):
+        """create client"""
+        (host, port, path) = self._parse_url(task.url)
+
+        task.headers["Host"] = host + ":" + str(port)
+        request = Request(task.method, path, task.headers, task.body)
 
         client_socket = self._create_socket(host, port)
 
-        headers["Host"] = host + ":" + str(port)
-        request = Request(method, path, headers, body)
-
-        # add client to task list and register to epoll
         fileno = client_socket.fileno()
 
         self.clients[fileno] = CLIENT(
-            client_socket, request, BytesIO(), callback, redirection)
+            client_socket, request, BytesIO(),
+            task.callback, task.redirection)
 
         self.epoll.register(fileno, WRITE)
+
+
+    def get(self, url, callback, headers={}, redirection=5):
+        self.tasks.append(
+            TASK("GET", url, b"", headers, callback, redirection))
+
+
+    def post(self, url, body, callback, headers={}, redirection=5):
+        self.tasks.append(
+            TASK("POST", url, body, headers, callback, redirection))
+
+
+    def start(self):
+        """create epoll and clients, start loop and close everything"""
+        try:
+            self.epoll = select.epoll()
+            self._create_clients()
+            self._loop()
+        finally:
+            self.epoll.close()
+            for client in self.clients.values():
+                client.socket.close()
+
+
+    def _loop(self):
+        """the main loop"""
+        while len(self.clients):
+            if self.tasks:
+                # add task in callback
+                self._create_clients()
+
+            for fileno, event in self.epoll.poll(0):
+                client = self.clients[fileno]
+
+                if event & WRITE:
+                    client.socket.sendall(client.request._request)
+                    self.epoll.modify(fileno, READ)
+
+                elif event & READ:
+                    data = client.socket.recv(4096)
+                    if data:
+                        client.response.write(data)
+                    else:
+                        # all data received.
+                        self.epoll.modify(fileno, 0)
+                        client.socket.shutdown(socket.SHUT_RDWR)
+                        self._response_handle(client)
+
+                elif event & STOP:
+                    self.epoll.unregister(fileno)
+                    client.socket.close()
+                    del self.clients[fileno]
 
 
     def _response_handle(self, client):
@@ -146,55 +207,9 @@ class asynclient():
         r = response.redirection(client.redirection)
 
         if r:
-            self._add_client(callback=client.callback, **r)
+            self._create_client(TASK(callback=client.callback, **r))
         else:
             client.callback(response)
-
-
-    def get(self, url, callback, headers={}, redirection=5):
-        self._add_client(method="GET", url=url, body=b"", headers=headers,
-                         callback=callback, redirection=redirection)
-
-
-    def post(self, url, body, callback, headers={}, redirection=5):
-        self._add_client(method="POST", url=url, body=body, headers=headers,
-                         callback=callback, redirection=redirection)
-
-
-    def close(self):
-        """close epoll and sockets"""
-        self.epoll.close()
-        for client in self.clients.values():
-            client.socket.close()
-
-
-    def loop(self):
-        """start loop"""
-        try:
-            while len(self.clients):
-                for fileno, event in self.epoll.poll():
-                    client = self.clients[fileno]
-
-                    if event & WRITE:
-                        client.socket.sendall(client.request._request)
-                        self.epoll.modify(fileno, READ)
-
-                    elif event & READ:
-                        data = client.socket.recv(4096)
-                        if data:
-                            client.response.write(data)
-                        else:
-                            # all data received.
-                            self.epoll.modify(fileno, 0)
-                            client.socket.shutdown(socket.SHUT_RDWR)
-                            self._response_handle(client)
-
-                    elif event & STOP:
-                        self.epoll.unregister(fileno)
-                        client.socket.close()
-                        del self.clients[fileno]
-        finally:
-            self.close()
 
 
 

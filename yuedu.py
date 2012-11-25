@@ -66,7 +66,7 @@ def get_book(urls):
         else:
             print("invalid url: " + url)
 
-    client.loop()
+    client.start()
 
     for book in book_list:
         with open(book["title"] + ".txt", "w") as f:
