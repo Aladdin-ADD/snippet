@@ -231,9 +231,8 @@ class Request():
         request_headers = "\r\n".join(
             k + ": " + str(v) for k,v in self.headers.items())
 
-        self._request = "{} {} HTTP/1.1\r\n{}\r\n\r\n".format(
-            self.method, self.path, request_headers).encode()
-        self._request += self.body
+        self._request = "{} {} HTTP/1.1\r\n{}\r\n\r\n{}".format(
+            method, path, request_headers, body).encode()
 
 
 
