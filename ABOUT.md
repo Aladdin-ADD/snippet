@@ -1,5 +1,12 @@
 # 2012/11/25
 
+### snippet/python/coroutine.py
+改用`send()`初始化，更通用些。
+
+------
+
+# 2012/11/25
+
 ### asynclient.py
 改用惰性求值的方式，保证程序最后会关闭 epoll 和打开的套接字。
 

@@ -12,7 +12,7 @@ from functools import wraps
 def coroutine(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        co = func(*args, **kwargs)
-        next(co)
-        return co
+        c = func(*args, **kwargs)
+        c.send()
+        return c
     return wrapper
