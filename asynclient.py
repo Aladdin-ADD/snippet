@@ -313,26 +313,22 @@ class Response():
 
 
 class _SSL():
-    context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-    context.verify_mode = ssl.CERT_REQUIRED
-    context.load_verify_locations(cafile="/etc/ssl/certs/ca-certificates.crt")
-
     ssl_recv = ssl.SSLSocket.recv
 
 
     @classmethod
     def wrapper(cls, s):
-        ssl_s = cls.context.wrap_socket(s, do_handshake_on_connect=False)
-        ssl_s.recv = cls.recv_wrapper(ssl_s)
-        return ssl_s
+        ss = ssl.wrap_socket(s, do_handshake_on_connect=False)
+        ss.recv = cls.recv_wrapper(ss)
+        return ss
 
 
     @classmethod
-    def recv_wrapper(cls, ssl_s):
+    def recv_wrapper(cls, ss):
         def recv(bufsize):
             while True:
                 try:
-                    return cls.ssl_recv(ssl_s, bufsize)
+                    return cls.ssl_recv(ss, bufsize)
                 except ssl.SSLError:
                     pass
         return recv
