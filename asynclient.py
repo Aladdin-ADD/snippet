@@ -3,8 +3,6 @@
 
 """A (too) simple asynchronous http client (use epoll).
 
-not support https.
-
 Usage:
 ```python
 from asynclient import asynclient
@@ -60,6 +58,7 @@ client1.start()
 
 import socket
 import select
+import ssl
 import re
 from urllib.parse import urlparse
 from collections import namedtuple
@@ -79,47 +78,50 @@ CLIENT = namedtuple(
     "client", ["socket", "request", "response", "callback", "redirection"])
 
 
-DRFAULT_PORT = {"http": 80, "https": 443} # unsupport https now.
-
-
-re_url = re.compile(
-    r"""(?ix)
-    ^https?://
-    [^/]+
-    \.
-    [^/]{2,4}
-    (/?)(?(1) .* | $)
-    """)
-
-
 
 
 class asynclient():
+    re_url = re.compile(
+        r"""(?ix)
+        ^https?://
+        [^/]+
+        \.
+        [^/]{2,4}
+        (/?)(?(1) .* | $)
+        """)
+
+
     def __init__(self):
         self.tasks = []
         self.clients = {}
 
 
     def _parse_url(self, url):
-        """parse url, return (host, port, path)."""
-        m = re_url.match(url)
+        """parse url, return (host, port, path, use_ssl)."""
+        m = self.re_url.match(url)
         if not m:
             raise ValueError("invalid url: " + url)
 
         r = urlparse(url)
 
-        path = r.path
+        port = r.port or 80 if r.scheme == "http" else 443
+        use_ssl = False if r.scheme == "http" else True
+
+        path = r.path or "/"
         if r.query:
             path += "?" + r.query
 
-        return (r.hostname, r.port or DRFAULT_PORT[r.scheme], path or "/")
+
+        return (r.hostname, port, path, use_ssl)
 
 
-    def _create_socket(self, host, port):
+    def _create_socket(self, host, port, use_ssl):
         """create non-blocking socket connection"""
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if use_ssl:
+            s = ssl_wrapper(s)
         s.connect((host, port))
-        #s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.setblocking(0)
         return s
 
@@ -133,12 +135,12 @@ class asynclient():
 
     def _create_client(self, task):
         """create client"""
-        (host, port, path) = self._parse_url(task.url)
+        (host, port, path, use_ssl) = self._parse_url(task.url)
 
         task.headers["Host"] = host + ":" + str(port)
         request = Request(task.method, path, task.headers, task.body)
 
-        client_socket = self._create_socket(host, port)
+        client_socket = self._create_socket(host, port, use_ssl)
 
         fileno = client_socket.fileno()
 
@@ -164,41 +166,45 @@ class asynclient():
         try:
             self.epoll = select.epoll()
             self._create_clients()
-            self._loop()
+            self._loop(self.tasks, self.clients, self.epoll)
         finally:
             self.epoll.close()
             for client in self.clients.values():
                 client.socket.close()
 
 
-    def _loop(self):
+    def _loop(self, tasks, clients, epoll):
         """the main loop"""
-        while len(self.clients):
-            if self.tasks:
+        while len(clients):
+            if tasks:
                 # add task in callback
                 self._create_clients()
 
-            for fileno, event in self.epoll.poll(0):
-                client = self.clients[fileno]
+            for fileno, event in epoll.poll():
+                client = clients[fileno]
 
                 if event & WRITE:
-                    client.socket.sendall(client.request._request)
-                    self.epoll.modify(fileno, READ)
+                    data = client.request._get()
+                    size = client.socket.send(data)
+                    if len(data) > size:
+                        client.request._set(data[size:])
+                    else:
+                        epoll.modify(fileno, READ)
 
                 elif event & READ:
-                    data = client.socket.recv(4096)
+                    data = client.socket.recv(8192)
                     if data:
                         client.response.write(data)
                     else:
                         # all data received.
-                        self.epoll.modify(fileno, 0)
+                        epoll.modify(fileno, 0)
                         client.socket.shutdown(socket.SHUT_RDWR)
                         self._response_handle(client)
 
                 elif event & STOP:
-                    self.epoll.unregister(fileno)
+                    epoll.unregister(fileno)
                     client.socket.close()
-                    del self.clients[fileno]
+                    del clients[fileno]
 
 
     def _response_handle(self, client):
@@ -231,8 +237,18 @@ class Request():
         request_headers = "\r\n".join(
             k + ": " + str(v) for k,v in self.headers.items())
 
-        self._request = "{} {} HTTP/1.1\r\n{}\r\n\r\n{}".format(
-            method, path, request_headers, body).encode()
+        _request = "{} {} HTTP/1.1\r\n{}\r\n\r\n".format(
+            method, path, request_headers).encode()
+        self._request = BytesIO(_request + body)
+
+
+    def _get(self):
+        return self._request.getvalue()
+
+
+    def _set(self, data):
+        self._request.seek(0)
+        self._request.write(data)
 
 
 
@@ -289,3 +305,48 @@ class Response():
                     "redirection": redirection - 1,
                 }
         return False
+
+
+
+
+class ssl_wrapper():
+    context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    context.verify_mode = ssl.CERT_REQUIRED
+    context.load_verify_locations(cafile="/etc/ssl/certs/ca-certificates.crt")
+    wrapper = context.wrap_socket
+
+
+    def __init__(self, s):
+        self.socket = self.wrapper(s, do_handshake_on_connect=False)
+
+
+    def connect(self, address):
+        self.socket.connect(address)
+
+
+    def setblocking(self, flag):
+        self.socket.setblocking(flag)
+
+
+    def send(self, data):
+        return self.socket.send(data)
+
+
+    def recv(self, bufsize):
+        while True:
+            try:
+                return self.socket.recv(bufsize)
+            except ssl.SSLError as e:
+                pass
+
+
+    def shutdown(self, how):
+        self.socket.shutdown(how)
+
+
+    def close(self):
+        self.socket.close()
+
+
+    def fileno(self):
+        return self.socket.fileno()

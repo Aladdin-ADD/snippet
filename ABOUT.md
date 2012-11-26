@@ -1,3 +1,11 @@
+# 2012/11/26
+
+### asynclient.py
+支持 https 了，虽然支持不太好。ca 文件的路径是个问题，其他 ssl 参数也是个问题。
+但至少可以用了。
+
+------
+
 # 2012/11/25
 
 ### snippet/python/coroutine.py
