@@ -104,13 +104,16 @@ class asynclient():
 
         r = urlparse(url)
 
-        port = r.port or 80 if r.scheme == "http" else 443
-        use_ssl = False if r.scheme == "http" else True
+        if r.scheme == "http":
+            port = r.port or 80
+            use_ssl = False
+        else:
+            port = r.port or 443
+            use_ssl = True
 
         path = r.path or "/"
         if r.query:
             path += "?" + r.query
-
 
         return (r.hostname, port, path, use_ssl)
 
@@ -120,7 +123,7 @@ class asynclient():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         if use_ssl:
-            s = ssl_wrapper(s)
+            s = _SSL.wrapper(s)
         s.connect((host, port))
         s.setblocking(0)
         return s
@@ -309,44 +312,27 @@ class Response():
 
 
 
-class ssl_wrapper():
+class _SSL():
     context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
     context.verify_mode = ssl.CERT_REQUIRED
     context.load_verify_locations(cafile="/etc/ssl/certs/ca-certificates.crt")
-    wrapper = context.wrap_socket
+
+    ssl_recv = ssl.SSLSocket.recv
 
 
-    def __init__(self, s):
-        self.socket = self.wrapper(s, do_handshake_on_connect=False)
+    @classmethod
+    def wrapper(cls, s):
+        ssl_s = cls.context.wrap_socket(s, do_handshake_on_connect=False)
+        ssl_s.recv = cls.recv_wrapper(ssl_s)
+        return ssl_s
 
 
-    def connect(self, address):
-        self.socket.connect(address)
-
-
-    def setblocking(self, flag):
-        self.socket.setblocking(flag)
-
-
-    def send(self, data):
-        return self.socket.send(data)
-
-
-    def recv(self, bufsize):
-        while True:
-            try:
-                return self.socket.recv(bufsize)
-            except ssl.SSLError as e:
-                pass
-
-
-    def shutdown(self, how):
-        self.socket.shutdown(how)
-
-
-    def close(self):
-        self.socket.close()
-
-
-    def fileno(self):
-        return self.socket.fileno()
+    @classmethod
+    def recv_wrapper(cls, ssl_s):
+        def recv(bufsize):
+            while True:
+                try:
+                    return cls.ssl_recv(ssl_s, bufsize)
+                except ssl.SSLError:
+                    pass
+        return recv
