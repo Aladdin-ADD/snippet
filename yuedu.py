@@ -6,7 +6,7 @@ import re
 import json
 from base64 import b64decode
 from bs4 import BeautifulSoup
-from asynclient import asynclient
+from asynclient import Asynclient
 
 
 re_bookid = re.compile(
@@ -47,7 +47,7 @@ def get_chapters(chapter_prefix, client, container):
 
 
 def get_book(urls):
-    client = asynclient()
+    client = Asynclient()
 
     book_prefix = "http://yuedu.163.com/getBook.do?curChapter=&tradeId=&id="
     chapter_prefix = "http://yuedu.163.com/getChapterContent.do?sourceUuid="

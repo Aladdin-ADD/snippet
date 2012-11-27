@@ -5,7 +5,7 @@
 
 Usage:
 ```python
-from asynclient import asynclient
+from asynclient import Asynclient
 from bs4 import BeautifulSoup
 from pprint import pprint
 
@@ -32,8 +32,8 @@ def wrapper(*args, **kwargs):
 
 
 # create client.
-client1 = asynclient()
-client2 = asynclient()
+client1 = Asynclient()
+client2 = Asynclient()
 
 
 # use `get/post` to add task, `callback` will be called when the task finished.
@@ -80,7 +80,19 @@ CLIENT = namedtuple(
 
 
 
-class asynclient():
+def _ssl_wrap_recv(s):
+    def recv(bufsize):
+        while True:
+            try:
+                return ssl.SSLSocket.recv(s, bufsize)
+            except ssl.SSLError:
+                pass
+    return recv
+
+
+
+
+class Asynclient():
     re_url = re.compile(
         r"""(?ix)
         ^https?://
@@ -123,7 +135,8 @@ class asynclient():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         if use_ssl:
-            s = _SSL.wrapper(s)
+            s = ssl.wrap_socket(s, do_handshake_on_connect=False)
+            s.recv = _ssl_wrap_recv(s)
         s.connect((host, port))
         s.setblocking(0)
         return s
@@ -178,7 +191,7 @@ class asynclient():
 
     def _loop(self, tasks, clients, epoll):
         """the main loop"""
-        while len(clients):
+        while clients:
             if tasks:
                 # add task in callback
                 self._create_clients()
@@ -308,27 +321,3 @@ class Response():
                     "redirection": redirection - 1,
                 }
         return False
-
-
-
-
-class _SSL():
-    ssl_recv = ssl.SSLSocket.recv
-
-
-    @classmethod
-    def wrapper(cls, s):
-        ss = ssl.wrap_socket(s, do_handshake_on_connect=False)
-        ss.recv = cls.recv_wrapper(ss)
-        return ss
-
-
-    @classmethod
-    def recv_wrapper(cls, ss):
-        def recv(bufsize):
-            while True:
-                try:
-                    return cls.ssl_recv(ss, bufsize)
-                except ssl.SSLError:
-                    pass
-        return recv
