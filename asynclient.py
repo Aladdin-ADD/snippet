@@ -92,7 +92,7 @@ def _ssl_wrap_recv(s):
 
 
 
-class Asynclient():
+class Asynclient:
     re_url = re.compile(
         r"""(?ix)
         ^https?://
@@ -236,9 +236,9 @@ class Asynclient():
 
 
 
-class Request():
+class Request:
     def __init__(self, method, path, headers, body):
-        self.http = "HTTP/1.1"
+        self.http = "HTTP/1.0"
         self.method = method
         self.path = path
         self.body = body
@@ -253,7 +253,7 @@ class Request():
         request_headers = "\r\n".join(
             k + ": " + str(v) for k,v in self.headers.items())
 
-        _request = "{} {} HTTP/1.1\r\n{}\r\n\r\n".format(
+        _request = "{} {} HTTP/1.0\r\n{}\r\n\r\n".format(
             method, path, request_headers).encode()
         self._request = BytesIO(_request + body)
 
@@ -269,7 +269,7 @@ class Request():
 
 
 
-class Response():
+class Response:
     def __init__(self, request, data):
         self.request = request
 
