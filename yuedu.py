@@ -33,9 +33,8 @@ def get_text(container, index):
 def get_chapters(chapter_prefix, client, container):
     def cb(response):
         j_book = json.loads(response.body.decode())
-        length = len(j_book["portions"])
-        chapter_content = [None] * length
-        for i, portion in zip(range(length), j_book["portions"]):
+        chapter_content = [None] * len(j_book["portions"])
+        for i, portion in enumerate(j_book["portions"]):
             url = (chapter_prefix
                    + "&articleUuid=" + portion["id"]
                    + "&bigContentId=" + portion["bigContentId"])
