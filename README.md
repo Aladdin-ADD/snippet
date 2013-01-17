@@ -19,5 +19,6 @@
     - coroutine.py 用于协程的包裹函数。
     - decompress.py 解压 gzip 压缩过的 html。
     - escape.py 转义 html 字符。
+    - pbkdf2.py PBKDF2加密。
     - singleton.py singleton 实现。
     - time_it.py timeit 模块用例。
