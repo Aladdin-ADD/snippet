@@ -16,7 +16,7 @@ def convert(ass_file, srt_file):
         (?:[^,]*,){6}
         (.*)$                   # subtitle
         ''')
-    re_newline = re.compile(r'(?i)\n') # replace \N with newline
+    re_newline = re.compile(r'(?i)\\n') # replace \N with newline
     re_style = re.compile(r'(?x) \{ [^}]+ \}') # replace style
 
     COUNT = -1 # subtitle number
