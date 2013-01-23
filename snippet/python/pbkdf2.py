@@ -18,12 +18,14 @@ import hmac
 _INT = Struct(b'>I').pack
 
 
-def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=hashlib.sha512):
+def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=None):
     """FROM DJANGO: Right now 10,000 iterations is the recommended default
     which takes 100ms on a 2.2Ghz Core 2 Duo.  This is probably the bare
     minimum for security given 1000 iterations was recommended in 2001.
     """
     assert dklen > 0
+    if hashfunc is None:
+        hashfunc = hashlib.sha512
 
     mac = hmac.new(password, None, hashfunc)
     hlen = mac.digest_size
