@@ -1,3 +1,13 @@
+# 2013/3/10
+
+### ./snippet/c/dict.c
+在尝试解析 http 协议，想要用字典来保存 header field，
+都要完工了才想起来 cookie 这个麻烦的家伙。
+
+作罢，还有好多函数没实现，先放着了。
+
+------
+
 # 2013/1/31
 
 ### ./snippet/python/kmp.py

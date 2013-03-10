@@ -7,6 +7,11 @@
 
 ------
 
++ snippet/c/
+    - dict.c dict.h 很傻的字典实现
+
+------
+
 + snippet/javascript/
     - mouse_direction.js 鼠标从哪个方向进入。
     - template.js 一个练手写的的 js 模板，没啥用，有机会再改进。
