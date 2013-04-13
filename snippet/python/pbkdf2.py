@@ -11,8 +11,7 @@ from binascii import hexlify
 from itertools import starmap
 from operator import xor
 from struct import Struct
-import hashlib
-import hmac
+from hmac import new
 
 
 _INT = Struct(b'>I').pack
@@ -25,9 +24,10 @@ def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=None):
     """
     assert dklen > 0
     if hashfunc is None:
-        hashfunc = hashlib.sha512
+        from hashlib import sha512
+        hashfunc = sha512
 
-    mac = hmac.new(password, None, hashfunc)
+    mac = new(password, None, hashfunc)
     hlen = mac.digest_size
 
     if dklen > (2 ** 32 - 1) * hlen:
@@ -52,9 +52,11 @@ def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=None):
 
 
 def test():
+    from hashlib import sha1
+
     # from rfc6070
     def check(p, s, c, dklen, output):
-        print(PBKDF2(p, s, c, dklen, hashlib.sha1) == output)
+        print(PBKDF2(p, s, c, dklen, sha1) == output)
 
     check(b'password', b'salt', 1, 20,
           b'0c60c80f961f0e71f3a9b524af6012062fe037a6')
