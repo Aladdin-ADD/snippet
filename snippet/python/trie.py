@@ -18,6 +18,7 @@ class _State(UserDict):
 class trie:
     def __init__(self, *patterns):
         """initial trie tree"""
+        self.patterns = patterns
         # create start state
         self._start = _State()
         self._start.shift = self._start
@@ -55,6 +56,7 @@ class trie:
         """search patterns in string"""
         result = []
         state = self._start
+        # search pattern in string
         for char in string:
             if char in state:
                 state = state[char]
@@ -71,7 +73,14 @@ class trie:
                         break
                     else:
                         shift = shift.shift
-        return result
+        # get all pattern
+        r = {
+            p
+            for p in self.patterns
+            for r in result
+            if p in r
+        }
+        return r
 
 
 
@@ -80,5 +89,5 @@ if __name__ == '__main__':
     t = trie("his", "he", "hers", "she")
     print(t.find("his name is thomspon"))
     print(t.find("hers"))
-    print(t.find("she is beauty")) # not found "he"
+    print(t.find("she is beauty"))
     print(t.find("he his"))
