@@ -1,3 +1,9 @@
+# 2013/06/04
+
+### ./github_print.js
+好久没更新了，发现 github 的样式改了一点点。
+
+
 # 2013/05/11
 
 ### ./snippet/c/rbtree.c
