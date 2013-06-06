@@ -4,12 +4,12 @@
 + verycd.js 输出 verycd 页面的全部 ed2k 链接，现在没什么用了……
 + yuedu.js 将网易云阅读里的书本内容提取出来。
 + yuedu.py 下载网易云阅读的脚本。
++ baidu_pan.js 百度盘下载地址。
 
 ------
 
 + snippet/c/
     - hash.{c, h} 很傻的哈希字典。
-    <!--- rbtree.{c, h} 很傻的红黑树字典。-->
 
 ------
 
