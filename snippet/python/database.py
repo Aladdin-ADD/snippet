@@ -1,0 +1,161 @@
+#!/usr/bin/env python3.3
+# -*- coding: utf-8 -*-
+
+# mysql connector 1.0.10
+# python 3.3.2
+# mariadb 5.5.31
+
+import logging
+import time
+import mysql.connector
+
+
+version = "0.1"
+version_info = (0, 1, 0, 0)
+
+
+
+class Connection:
+    """ usage:
+    >>> import database
+    >>> db = database.Connection("user", "password", "database")
+    """
+    def __init__(self, user, password, database, host="127.0.0.1",
+                 max_idle_time=6 * 3600, connect_timeout=10,
+                 time_zone="+0:00"):
+        self.host = host
+        self.max_idle_time = float(max_idle_time)
+
+        config = {
+            "user": user,
+            "password": password,
+            "database": database,
+            "connect_timeout": connect_timeout,
+            "time_zone": time_zone,
+            "autocommit": True,
+            "sql_mode": "TRADITIONAL",
+            "use_unicode": True,
+            "charset": "utf8",
+        }
+
+        if "/" in host:
+            config["unix_socket"] = host
+        else:
+            pair = host.split(":")
+            if len(pair) == 2:
+                config["host"] = pair[0]
+                config["port"] = int(pair[1])
+            else:
+                config["host"] = host
+
+        self._db = None
+        self._db_config = config
+        self._last_use_time = time.time()
+
+        try:
+            self.reconnect()
+        except Exception:
+            logging.error("Cannot connect to maria on {}".format(self.host),
+                          exc_info=True)
+
+
+    def __del__(self):
+        self.close()
+
+
+    def close(self):
+        """Closes database connection"""
+        if getattr(self, "_db", None) is not None:
+            self._db.close()
+            self._db = None
+
+
+    def reconnect(self):
+        """Closes the existing database connection and re-opens it"""
+        self.close()
+        self._db = mysql.connector.connect(**self._db_config)
+
+
+    def _ensure_connected(self):
+        if (time.time() - self._last_use_time > self.max_idle_time
+                or self._db is None):
+            self.reconnect()
+        self._last_use_time = time.time()
+
+
+    def _cursor(self):
+        self._ensure_connected()
+        return self._db.cursor()
+
+
+    def _execute(self, cursor, query, parameters, kwparameters):
+        try:
+            return cursor.execute(query, kwparameters or parameters)
+        except mysql.connector.OperationalError:
+            logging.error("Error connecting to MySQL on {}".format(self.host))
+            self.close()
+            raise
+
+
+    def iter(self, query, *parameters, **kwparameters):
+        """Returns an iterator for the given query and parameters."""
+        cursor = self._cursor()
+        try:
+            self._execute(cursor, query, parameters, kwparameters)
+            for row in cursor:
+                yield Row(zip(cursor.column_names, row))
+        finally:
+            cursor.close()
+
+
+    def query(self, query, *parameters, **kwparameters):
+        """Returns a row list for the given query and parameters."""
+        cursor = self._cursor()
+        try:
+            self._execute(cursor, query, parameters, kwparameters)
+            return [Row(zip(cursor.column_names, row)) for row in cursor]
+        finally:
+            cursor.close()
+
+
+    def get(self, query, *parameters, **kwparameters):
+        """Returns the first row returned for the given query."""
+        rows = self.query(query, *parameters, **kwparameters)
+        if not rows:
+            return None
+        elif len(rows) > 1:
+            raise Exception("Multiple rows returned for Database.get() query")
+        else:
+            return rows[0]
+
+
+    def execute(self, query, *parameters, **kwparameters):
+        """Executes the given query, returning the rowcount from the query."""
+        cursor = self._cursor()
+        try:
+            self._execute(cursor, query, parameters, kwparameters)
+            return cursor.rowcount
+        finally:
+            cursor.close()
+
+
+    def executemany(self, query, parameters):
+        """Executes the given query against all the given param sequences.
+        return the rowcount from the query.
+        """
+        cursor = self._cursor()
+        try:
+            cursor.executemany(query, parameters)
+            return cursor.rowcount
+        finally:
+            cursor.close()
+
+
+
+
+class Row(dict):
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(name)

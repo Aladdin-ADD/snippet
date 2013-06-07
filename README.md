@@ -23,6 +23,7 @@
 + snippet/python/
     - chunked.py 处理 chunked 数据。
     - coroutine.py 用于协程的包裹函数。
+    - database.py mysql-connector 版的 torndb。
     - decompress.py 解压 gzip 压缩过的 html。
     - escape.py 转义 html 字符。
     - kmp.py Knuth-Morris-Pratt 算法。
