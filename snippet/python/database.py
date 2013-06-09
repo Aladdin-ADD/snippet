@@ -6,7 +6,6 @@
 # mariadb 5.5.31
 
 import logging
-import time
 import mysql.connector
 
 
@@ -21,10 +20,8 @@ class Connection:
     >>> db = database.Connection("user", "password", "database")
     """
     def __init__(self, user, password, database, host="127.0.0.1",
-                 max_idle_time=6 * 3600, connect_timeout=10,
-                 time_zone="+0:00"):
+                 connect_timeout=10, time_zone="+0:00"):
         self.host = host
-        self.max_idle_time = float(max_idle_time)
 
         config = {
             "user": user,
@@ -50,12 +47,11 @@ class Connection:
 
         self._db = None
         self._db_config = config
-        self._last_use_time = time.time()
 
         try:
             self.reconnect()
         except Exception:
-            logging.error("Cannot connect to maria on {}".format(self.host),
+            logging.error("Cannot connect to MySQL on {}".format(self.host),
                           exc_info=True)
 
 
@@ -77,10 +73,8 @@ class Connection:
 
 
     def _ensure_connected(self):
-        if (time.time() - self._last_use_time > self.max_idle_time
-                or self._db is None):
+        if self._db is None or not self._db.is_connected():
             self.reconnect()
-        self._last_use_time = time.time()
 
 
     def _cursor(self):
@@ -124,7 +118,7 @@ class Connection:
         if not rows:
             return None
         elif len(rows) > 1:
-            raise Exception("Multiple rows returned for Database.get() query")
+            raise Exception("Multiple rows returned for database.get() query")
         else:
             return rows[0]
 

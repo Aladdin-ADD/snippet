@@ -1,3 +1,10 @@
+# 2013/06/09
+
+### ./snippet/python/database.py
+去掉了`max_idle_time`参数，直接使用自带的`is_connected`方法来检查连接是否可用。
+
+------
+
 # 2013/06/07
 
 ### ./snippet/python/database.py
