@@ -1,3 +1,12 @@
+# 2013/06/12
+
+### ./snippet/python/options.py
+对`argparse`的一点包装，模仿了下`tornado.options`。
+感觉功能上`argparse`更给力，不过没那么多需求的话，直接一个`define`，
+用起来确实更方便些。
+
+------
+
 # 2013/06/09
 
 ### ./snippet/python/database.py
