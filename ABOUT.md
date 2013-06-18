@@ -1,3 +1,10 @@
+# 2013/06/18
+
+### ./github_print.js
+github 改版了呀。
+
+------
+
 # 2013/06/15
 
 ### ./snippet/c/perfect_hash.c
