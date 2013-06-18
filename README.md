@@ -11,6 +11,7 @@
 + snippet/c/
     - hash.{c, h} 很傻的哈希字典。
     - perfect_hash.c 不会发生碰撞的字典，perfect hash。
+    - skiplist.c 跳跃表，高度居然是随机的。
 
 ------
 
