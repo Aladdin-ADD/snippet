@@ -59,7 +59,8 @@ node_t *new_node(char *key, int level) {
 
 int random_level(void) {
 	int level = 1;
-	while ((random() * 2 / RAND_MAX == 1) && level <= max_level)
+	// p = 1/4
+	while ((random() <= RAND_MAX / 4) && (level <= max_level))
 		level++;
 	return level;
 }
