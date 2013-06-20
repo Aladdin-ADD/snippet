@@ -18,7 +18,7 @@ void *lookup(skiplist_t *s, char *key);
 
 typedef struct node node_t;
 
-node_t *new_node(char *key, int level);
+node_t *new_node(char *key, void *value, int level);
 int random_level(void);
 
 //////////////////////////////////////////////////////////////////////////////
@@ -34,15 +34,14 @@ struct node {
 };
 
 
-node_t *new_node(char *key, int level) {
-	// only first node has *key* and *value*
-
+node_t *new_node(char *key, void *value, int level) {
 	// create first node
 	node_t *node = calloc(1, sizeof(node_t));
 	assert(node != NULL);
 	size_t len = strlen(key) + 1;
 	node->key = malloc(sizeof(char) * len);
 	memcpy(node->key, key, len);
+	node->value = value;
 
 	// following node
 	int i = 1;
@@ -51,6 +50,8 @@ node_t *new_node(char *key, int level) {
 		ptr->down = calloc(1, sizeof(node_t));
 		assert(ptr->down != NULL);
 		ptr = ptr->down;
+		ptr->key = node->key;
+		ptr->value = value;
 	}
 
 	return node;
@@ -176,8 +177,7 @@ void update(skiplist_t *s, char *key, void *value) {
 		} else {
 			// create new node
 			int level = random_level();
-			node_t *node = new_node(key, level);
-			node->value = value;
+			node_t *node = new_node(key, value, level);
 
 			// move to new node's level
 			int i = max_level - level;

@@ -1,3 +1,10 @@
+# 2013/06/20
+
+### ./snippet/c/skiplist.c
+没注意就出现 bug 了啊。
+
+------
+
 # 2013/06/18
 
 ### ./snippet/c/skiplist.c
