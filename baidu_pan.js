@@ -81,6 +81,7 @@
 					}
 				}
 				addTasks(remote, filelist);
+				pop.alert('ok.');
 			}
 		}, false);
 	}
