@@ -1,3 +1,11 @@
+# 2013/06/22
+
+### ./snippet/python/pbkdf2.py
+从 `python cookbook` 上看到的技巧，直接使用 `int` 的 `to_bytes` 方法。
+不过对效率完全没影响……
+
+------
+
 # 2013/06/20
 
 ### ./snippet/c/skiplist.c

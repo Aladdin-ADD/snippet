@@ -10,11 +10,8 @@ thanks to mitsuhiko's python-pbkdf2 and django's crypto.
 from binascii import hexlify
 from itertools import starmap
 from operator import xor
-from struct import Struct
 from hmac import new
 
-
-_INT = Struct(b'>I').pack
 
 
 def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=None):
@@ -40,7 +37,7 @@ def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=None):
 
     T_list = []
     for i in range(1, 1 - (-dklen // hlen)):  # T{1} to T{ceil(dklen/hlen)}
-        u = _pseudorandom(salt + _INT(i))
+        u = _pseudorandom(salt + i.to_bytes(4, 'big'))
         T_i = u
         for j in range(iterations - 1):  # U{1} to U{iteration}
             u = _pseudorandom(u)
