@@ -34,3 +34,4 @@
     - singleton.py singleton 实现。
     - time_it.py timeit 模块用例。
     - trie.py trie 算法。
+    - urlimport.py 从网上导入模块的简单方法。

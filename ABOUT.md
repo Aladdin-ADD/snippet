@@ -1,3 +1,10 @@
+# 2013/06/25
+
+### ./snippet/python/urlimport.py
+最早在 v2ex 看过，最近又在 python cookbook 上面看到。抄了一份。
+
+------
+
 # 2013/06/22
 
 ### ./snippet/python/pbkdf2.py
