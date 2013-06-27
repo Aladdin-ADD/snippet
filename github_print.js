@@ -5,8 +5,7 @@
 
 	/*隐藏无需打印的元素*/
 	var hide = [
-		'#footer-push',
-		'#footer',
+		'.site-footer',
 		'.header',
 		'.pagehead',
 		'.repository-sidebar',
@@ -21,6 +20,7 @@
 
 	/*调整样式*/
 	document.querySelector('#files').style.padding = '0';
+	document.querySelector('#js-repo-pjax-container').style.width = '980px';
 	var lines = document.querySelectorAll('.line, td.blob-line-nums span');
 	for (i = lines.length - 1; i >= 0; --i) {
 		lines[i].style.font = '15px Monaco';
