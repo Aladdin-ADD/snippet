@@ -2,6 +2,7 @@
 	'use strict';
 
 	var result = [];
+
 	var buttom = document.querySelector('#downFileButtom');
 	if (buttom !== null) {
 		/*one file*/
@@ -9,20 +10,39 @@
 		result.push([name.title, buttom.href]);
 	} else {
 		/*directory*/
-		var listUrl = 'http://pan.baidu.com/share/list' +
+		if (window.location.hash) {
+			/* sub directory */
+			var listUrl = 'http://pan.baidu.com/share/list' +
 			window.location.search +
-			window.location.hash.replace('#dir/path=', '&dir=') +
-			'&channel=chunlei&clienttype=0&web=1&page=1';
-		var xhr = new XMLHttpRequest();
-		xhr.open('get', listUrl, false);
-		xhr.send(null);
-		if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-			var resp = JSON.parse(xhr.responseText);
-			resp.list.forEach(function(elem) {
-				result.push([elem.server_filename, elem.dlink]);
+				window.location.hash.replace('#dir/path=', '&dir=') +
+				'&channel=chunlei&clienttype=0&web=1&page=1';
+			var xhr = new XMLHttpRequest();
+			xhr.open('get', listUrl, false);
+			xhr.send(null);
+			if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+				var resp = JSON.parse(xhr.responseText);
+				resp.list.forEach(function(elem) {
+					result.push([elem.server_filename, elem.dlink]);
+				});
+			}
+		} else {
+			/* whole directory */
+			var script = document.querySelectorAll('script')[9];
+			var textList = script.firstChild.wholeText.split(';');
+			textList.splice(0, 7);
+			textList.pop();
+			var tmpList;
+			var filename;
+			var dlink;
+			textList.forEach(function(elem) {
+				tmpList = elem.split('}', 1)[0].split('"');
+				filename = decodeURI(tmpList[0]).replace(' filename=', '').replace(/\\$/, '');
+				dlink = tmpList[4].replace(/\\/g, '');
+				result.push([filename, dlink]);
 			});
 		}
 	}
+
 	output(result);
 
 /*****************************************************************************/
@@ -61,8 +81,7 @@
 		html += '<input type="submit" value="add to aria2" id="submit" />';
 		html += '</form>';
 
-		var pop = window.open(
-			'', 'content', 'height=600, width=800, scrollbars=yes');
+		var pop = window.open('', 'content', 'height=600, width=800, scrollbars=yes');
 		var doc = pop.document;
 		doc.body.innerHTML = html;
 		doc.body.addEventListener('click', function(e) {
