@@ -27,8 +27,8 @@
 			}
 		} else {
 			/* whole directory */
-			var script = document.querySelectorAll('script')[9];
-			var textList = script.firstChild.wholeText.split(';');
+			var script = document.querySelectorAll('script')[9].firstChild;
+			var textList = script.wholeText.replace(/\\/g, '').split(';');
 			textList.splice(0, 7);
 			textList.pop();
 			var tmpList;
@@ -36,8 +36,8 @@
 			var dlink;
 			textList.forEach(function(elem) {
 				tmpList = elem.split('}', 1)[0].split('"');
-				filename = decodeURI(tmpList[0]).replace(' filename=', '').replace(/\\$/, '');
-				dlink = tmpList[4].replace(/\\/g, '');
+				filename = decodeURI(tmpList[0]).replace(' filename=', '');
+				dlink = tmpList[4];
 				result.push([filename, dlink]);
 			});
 		}
