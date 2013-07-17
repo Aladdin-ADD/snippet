@@ -67,7 +67,10 @@
 	};
 
 	function output(res) {
-		var html = '<form action="">';
+		var html = '<style>';
+		html += 'form{margin:0}form input{font-size:100%;margin:0;vertical-align:baseline;line-height:normal}form input[type="text"]{width:30em;padding:.5em .6em;display:inline-block;border:1px solid #ccc;font-size:.8em;box-shadow:inset 0 1px 3px #ddd;border-radius:4px;transition:.3s linear border;box-sizing:border-box}form input[type="checkbox"]{margin:.5em}form input[type="text"]:focus,form input[type="checkbox"]:focus{outline:0;border-color:#129fea}form label{margin:.5em 1em .2em;font-size:90%}div{margin:.5em 0}div:hover{background-color:#ace}';
+		html += '</style>';
+		html += '<form>';
 		html += '<label>JSON RPC path: ';
 		html += '<input type="text" value="ws://localhost:6800/jsonrpc" id="remote" />';
 		html += '</label>';
@@ -81,27 +84,35 @@
 		html += '<input type="submit" value="add to aria2" id="submit" />';
 		html += '</form>';
 
-		var pop = window.open('', 'content', 'height=600, width=800, scrollbars=yes');
+		var pop = window.open('', 'content', 'height=500, width=900, scrollbars=yes');
 		var doc = pop.document;
 		doc.body.innerHTML = html;
-		doc.body.addEventListener('click', function(e) {
-			/*click submit to add tasks*/
-			if (e.target.id === "submit") {
-				e.preventDefault();
-				var remote = doc.querySelector('#remote').value;
-				var filelist = [];
-				var div = doc.querySelectorAll('div.file');
-				for (var i = div.length - 1; i >= 0; --i) {
-					if (div[i].querySelector('input[type=checkbox]').checked) {
-						filelist.push([
-							div[i].querySelector('input[type=text]').value,
-							div[i].querySelector('a').href
-						]);
-					}
+
+		var forEach = Array.prototype.forEach;
+		var divs = doc.querySelectorAll('div.file');
+		forEach.call(divs, function(el) {
+			el.addEventListener('click', function(e) {
+				if (e.target === this) {
+					var box = this.querySelector('input[type=checkbox]');
+					box.checked = box.checked ? false : true;
 				}
-				addTasks(remote, filelist);
-				pop.alert('ok.');
-			}
-		}, false);
+			});
+		});
+		var submit = doc.querySelector('#submit');
+		submit.addEventListener('click', function(e) {
+			e.preventDefault();
+			var remote = doc.querySelector('#remote').value;
+			var filelist = [];
+			forEach.call(divs, function(el) {
+				if (el.querySelector('input[type=checkbox]').checked) {
+					filelist.push([
+						el.querySelector('input[type=text]').value,
+						el.querySelector('a').href
+					]);
+				}
+			});
+			addTasks(remote, filelist);
+			pop.alert('ok.');
+		});
 	}
 })();
