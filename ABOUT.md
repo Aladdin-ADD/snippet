@@ -1,3 +1,19 @@
+# 2013/07/19
+
+### ./redisSub.py
+[redis-py](https://github.com/andymccurdy/redis-py)
+的 `subscribe` 是阻塞的。
+[tornado-redis](https://github.com/leporo/tornado-redis)
+则是根本不支持 python3 。
+
+所以写了这玩意。
+只支持 `subscribe` 的几个命令，其他命令用 `redis-py` 吧。
+代码很粗糙，也还有几个问题。之后慢慢解决吧。
+
+感觉文件好乱，要怎么整理一下。
+
+-------
+
 # 2013/07/17
 
 ### ./baidu_pan.js
