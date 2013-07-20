@@ -10,10 +10,6 @@ sub = redisSub()
 print(sub.subscribe("ch"))
 sub.listen(lambda x: print(x))
 IOLoop.instance().start()
-
-
-TODO:
-support `subscribe` in `listen`.
 """
 
 import socket
@@ -103,7 +99,7 @@ class redisSub:
             data = yield gen.Task(self.stream.read_until, b"\n")
             flag, data = data[0], data[1:-2]
             if flag != 42:
-                raise Exception("error reply flag {}".format(chr(flag)))
+                raise Exception("unexpected reply flag: " + chr(flag))
             length = int(data)
             if length == -1:
                 reply = None
@@ -113,7 +109,7 @@ class redisSub:
                     data = yield gen.Task(self.stream.read_until, b"\n")
                     flag, data = data[0], data[1:-2]
                     if flag != 36:
-                        raise Exception("err reply flag {}".format(chr(flag)))
+                        raise Exception("unexpected reply flag: " + chr(flag))
                     length = int(data)
                     if length == -1:
                         reply.append(None)
