@@ -95,17 +95,18 @@ class redisSub:
             self.fp = None
             self.socket.close()
 
-    def listen(self, callback):
-        if self.stream is None:
-            self.fp.close()
-            self.fp = None
-            self.stream = IOStream(self.socket)
-            self.stream.set_nodelay(True)
-            self._start_listen(callback)
-
     @gen.coroutine
-    def _start_listen(self, callback):
-        while True:
+    def listen(self, callback):
+        if self.stream is not None:
+            return
+
+        self.fp.close()
+        self.fp = None
+
+        self.stream = IOStream(self.socket)
+        self.stream.set_nodelay(True)
+
+        while not self.stream.closed():
             data = yield gen.Task(self.stream.read_until, b"\n")
             flag, data = data[0], data[1:-2]
             if flag != 42:
