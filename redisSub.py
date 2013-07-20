@@ -27,9 +27,9 @@ b = lambda x: str(x).encode()
 
 class redisSub:
     def __init__(self, host="localhost", port=6379, db=0, pw=None):
-        self.sock = socket.socket()
-        self.sock.connect((host, port))
-        self.fp = self.sock.makefile("rb")
+        self.socket = socket.socket()
+        self.socket.connect((host, port))
+        self.fp = self.socket.makefile("rb")
         self.stream = None
         if pw:
             self._command("AUTH", pw)
@@ -44,7 +44,7 @@ class redisSub:
             val = b(val)
             cmd += [b"$", b(len(val)), b"\r\n", val, b"\r\n"]
         cmd = b"".join(cmd)
-        self.sock.sendall(cmd)
+        self.socket.sendall(cmd)
 
     def _read_response(self):
         data = self.fp.readline()
@@ -86,11 +86,21 @@ class redisSub:
         self._command("PUNSUBSCRIBE", *pattenns)
         return [self._read_response() for i in pattenns]
 
+    def close(self):
+        if self.stream is not None:
+            self.stream.close()
+            self.stream = None
+        else:
+            self.fp.close()
+            self.fp = None
+            self.socket.close()
+
     def listen(self, callback):
         if self.stream is None:
             self.fp.close()
             self.fp = None
-            self.stream = IOStream(self.sock)
+            self.stream = IOStream(self.socket)
+            self.stream.set_nodelay(True)
             self._start_listen(callback)
 
     @gen.coroutine
@@ -126,9 +136,6 @@ class redisSub:
 if __name__ == '__main__':
     from tornado.ioloop import IOLoop
     sub = redisSub()
-    print(sub.subscribe("ch", "chan"))
-    print(sub.unsubscribe("chan"))
-    print(sub.psubscribe("chan.*"))
-    print(sub.punsubscribe("ch.*"))
-    sub.listen(lambda x: print(x))
+    print(sub.psubscribe("ch*"))
+    sub.listen(lambda msg: print(msg))
     IOLoop.instance().start()
