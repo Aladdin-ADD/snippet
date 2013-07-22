@@ -11,29 +11,25 @@
  */
 
 (function() {
-	'use strict';
-
 	var template = function(str) {
-		var compiled = '"use strict";var output="' +
+		var compiled = '(function(data){with(data){var code="' +
 			str.replace(/\s+/g, ' ')
 			.replace(/{{/g, '"+')
 			.replace(/}}/g, '+"')
+			.replace(/{%\s?end\s?%}/g, '";}code+="')
 			.replace(/{%\s?else/g, '";}else')
-			.replace(/{%\s?end\s?%}/g, '";}output+="')
-			.replace(/{%/g, '";')
-			.replace(/%}/g, '{output+="') +
-			'";return output;';
-		//console.log(compiled);
-		return {'generate': new Function('ns', compiled)};
+			.replace(/{%/g, '";').replace(/%}/g, '{code+="') +
+			'";}return code;})';
+		return { generate: eval(compiled) };
 	};
 
-	var cache = Object.create(null);
+	var cache = {};
 	var tmpl = function(id, data) {
-		if (! (id in cache))
+		if (!(id in cache))
 			cache[id] = template(document.getElementById(id).innerHTML);
 		return data ? cache[id].generate(data) : cache[id];
 	};
 	tmpl.template = template;
 
-	this.tmpl = tmpl;
-}).call(window);
+	window.tmpl = tmpl;
+})();
