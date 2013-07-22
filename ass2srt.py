@@ -19,9 +19,8 @@ def convert(ass_file, srt_file):
     re_newline = re.compile(r'(?i)\\n') # replace \N with newline
     re_style = re.compile(r'(?x) \{ [^}]+ \}') # replace style
 
-    COUNT = -1 # subtitle number
-    CONN = ' --> '
-    LF = '\n'
+    cnt = -1 # subtitle number
+    tmpl = '{}\n{} --> {}\n{}\n\n'
 
     def convert_line(ass_line):
         m = re_ass.search(ass_line)
@@ -29,17 +28,15 @@ def convert(ass_file, srt_file):
         if not m: # line without subtitle
             return ''
 
-        nonlocal COUNT
-        COUNT += 1
+        nonlocal cnt
+        cnt += 1
         subtitle = re_style.sub('', m.group(3))
         subtitle = re_newline.sub('\n', subtitle)
-        return (str(COUNT) + LF +
-                m.group(1) + CONN + m.group(2) + LF +
-                subtitle + LF + LF)
+        return tmpl.format(cnt, m.group(1), m.group(2), subtitle)
 
     with open(ass_file) as ass:
         with open(srt_file, 'w') as srt:
-            srt.writelines([convert_line(line) for line in ass])
+            srt.writelines(convert_line(line) for line in ass)
 
     print(ass_file, '-->', srt_file)
 
