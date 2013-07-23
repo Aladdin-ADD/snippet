@@ -23,6 +23,7 @@
 
   - javascript
 
+    + class.js 类。
     + mouse_direction.js 鼠标从哪个方向进入。
     + template.js 一个练手写的的 js 模板，没啥用，有机会再改进。
     + type.js 类型检查。
