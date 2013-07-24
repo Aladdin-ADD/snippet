@@ -33,9 +33,9 @@
 		// copy properties to prototype
 		// **caution**:
 		// define immutable objects in properties,
-		// will be share between instances.
+		// which will be shared between instances.
 		// define mutable objects in `init` method,
-		// will be created for each instance.
+		// which will be created for each instance.
 		var _super = this.prototype;
 		for (var name in properties) {
 			if (typeof(properties[name]) === 'function' &&
@@ -43,6 +43,7 @@
 				/\b_super\b/.test(properties[name])) {
 				// if property is a function
 				// and `_super` method is invoked
+				// get `_super` from prototype
 				_prototype[name] = (function(name, fn) {
 					return function() {
 						// assign super method to `_super` temporary
