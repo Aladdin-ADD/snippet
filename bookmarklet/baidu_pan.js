@@ -47,7 +47,7 @@
 
 /*****************************************************************************/
 
-	var addTasks = function(remote, filelist) {
+	var addTasks = function(remote, filelist, pop) {
 		/*use jsonrpc to add tasks*/
 		if (filelist.length === 0) return;
 		var conn = new WebSocket(remote);
@@ -62,7 +62,13 @@
 				});
 			});
 			conn.send(JSON.stringify(data));
-			conn.close();
+		};
+		conn.onmessage = function(e) {
+			var data = JSON.parse(e.data);
+			if (data instanceof Array) {
+				pop.alert('ok.');
+				conn.close();
+			}
 		};
 	};
 
@@ -111,8 +117,7 @@
 					]);
 				}
 			});
-			addTasks(remote, filelist);
-			pop.alert('ok.');
+			addTasks(remote, filelist, pop);
 		});
 	}
 })();

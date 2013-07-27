@@ -1,3 +1,10 @@
+# 2013/07/27
+
+### ./bookmarklet/baidu_pan.js
+aria2 有反映之后才提示成功，不知道有没其他问题。
+
+------
+
 # 2013/07/23
 
 ### ./snippet/javascript/class.js
