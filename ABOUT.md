@@ -1,3 +1,10 @@
+# 2013/07/28
+
+### ./bookmarklet/baidu_pan.js
+百度更新了界面，其他倒是没多少变化。
+
+------
+
 # 2013/07/27
 
 ### ./bookmarklet/baidu_pan.js

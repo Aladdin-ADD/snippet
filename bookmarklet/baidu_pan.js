@@ -13,7 +13,7 @@
 		if (window.location.hash) {
 			/* sub directory */
 			var listUrl = 'http://pan.baidu.com/share/list' +
-			window.location.search +
+				window.location.search +
 				window.location.hash.replace('#dir/path=', '&dir=') +
 				'&channel=chunlei&clienttype=0&web=1&page=1';
 			var xhr = new XMLHttpRequest();
@@ -27,16 +27,16 @@
 			}
 		} else {
 			/* whole directory */
-			var script = document.querySelectorAll('script')[9].firstChild;
+			var script = document.querySelectorAll('script')[10].firstChild;
 			var textList = script.wholeText.replace(/\\/g, '').split(';');
-			textList.splice(0, 7);
+			textList.splice(0, 10);
 			textList.pop();
 			var tmpList;
 			var filename;
 			var dlink;
 			textList.forEach(function(elem) {
 				tmpList = elem.split('}', 1)[0].split('"');
-				filename = decodeURI(tmpList[0]).replace(' filename=', '');
+				filename = decodeURIComponent(tmpList[0]).replace(' filename=', '');
 				dlink = tmpList[4];
 				result.push([filename, dlink]);
 			});
