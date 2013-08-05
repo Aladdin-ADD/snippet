@@ -3,14 +3,30 @@
 
 	var result = [];
 
-	var buttom = document.querySelector('#downFileButtom');
-	if (buttom !== null) {
-		/*one file*/
-		var name = document.querySelector('h2.b-fl.ellipsis');
-		result.push([name.title, buttom.href]);
+	if (document.querySelector('#downFileButtom') !== null) {
+		/*file*/
+		var script = document.querySelectorAll('script:not([src])')[3];
+		var tmp = script.textContent.replace(/\\/g, '').split(';')[3].split('"');
+		result.push([
+			decodeURIComponent(tmp[0]).replace(' filename=', ''),
+			tmp[4]
+		]);
 	} else {
-		/*directory*/
-		if (window.location.hash) {
+		if (!window.location.hash) {
+			/* one directory */
+			var script = document.querySelectorAll('script')[10];
+			var textList = script.textContent.replace(/\\/g, '').split(';');
+			textList.splice(0, 10);
+			textList.pop();
+			var tmpList;
+			textList.forEach(function(elem) {
+				tmpList = elem.split('}', 1)[0].split('"');
+				result.push([
+					decodeURIComponent(tmpList[0]).replace(' filename=', ''),
+					tmpList[4]
+				]);
+			});
+		} else {
 			/* sub directory */
 			var listUrl = 'http://pan.baidu.com/share/list' +
 				window.location.search +
@@ -25,21 +41,6 @@
 					result.push([elem.server_filename, elem.dlink]);
 				});
 			}
-		} else {
-			/* whole directory */
-			var script = document.querySelectorAll('script')[10].firstChild;
-			var textList = script.wholeText.replace(/\\/g, '').split(';');
-			textList.splice(0, 10);
-			textList.pop();
-			var tmpList;
-			var filename;
-			var dlink;
-			textList.forEach(function(elem) {
-				tmpList = elem.split('}', 1)[0].split('"');
-				filename = decodeURIComponent(tmpList[0]).replace(' filename=', '');
-				dlink = tmpList[4];
-				result.push([filename, dlink]);
-			});
 		}
 	}
 
