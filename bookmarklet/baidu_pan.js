@@ -65,9 +65,12 @@
 			});
 			conn.send(JSON.stringify(data));
 		};
+		conn.onerror = function(e) {
+			pop.alert('error.');
+		};
 		conn.onmessage = function(e) {
 			var data = JSON.parse(e.data);
-			if (data.id === id) {
+			if (Array.isArray(data)) {
 				pop.alert('ok.');
 				conn.close();
 			}
