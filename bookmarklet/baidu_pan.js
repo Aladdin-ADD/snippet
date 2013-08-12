@@ -52,13 +52,12 @@
 		/*use jsonrpc to add tasks*/
 		if (filelist.length === 0) return;
 		var conn = new WebSocket(remote);
-		var id = Date.now().toString();
 		conn.onopen = function(e) {
 			var data = [];
 			filelist.forEach(function(elem) {
 				data.push({
 					'jsonrpc': '2.0',
-					'id': id,
+					'id': 'blah',
 					'method': 'aria2.addUri',
 					'params': [[elem[1]], {'out': elem[0]}] /* url, name */
 				});
@@ -66,7 +65,7 @@
 			conn.send(JSON.stringify(data));
 		};
 		conn.onerror = function(e) {
-			pop.alert('error.');
+			pop.alert('No aria2 connection.');
 		};
 		conn.onmessage = function(e) {
 			var data = JSON.parse(e.data);
