@@ -9,18 +9,18 @@
 		var tmp = script.textContent.replace(/\\/g, '').split(';')[3].split('"');
 		result.push([
 			decodeURIComponent(tmp[0]).replace(' filename=', ''),
-			tmp[4]
+			tmp[26]
 		]);
 	} else {
 		if (!window.location.hash) {
 			/* one directory */
-			var script = document.querySelectorAll('script')[10];
+			var script = document.querySelectorAll('script:not([src])')[3];
 			var textList = script.textContent.replace(/\\/g, '').split(';');
 			textList.splice(0, 10);
 			textList.pop();
 			var tmpList;
 			textList.forEach(function(elem) {
-				tmpList = elem.split('}', 1)[0].split('"');
+				tmpList = elem.split('"');
 				result.push([
 					decodeURIComponent(tmpList[0]).replace(' filename=', ''),
 					tmpList[4]
