@@ -5,9 +5,7 @@
 
 	var img = document.querySelector('img');
 
-	img.addEventListener('dragstart', function(e) {
-		e.preventDefault();
-	});
+	img.draggable = false;
 
 	var drag;
 	img.addEventListener('mousedown', function(e) {
