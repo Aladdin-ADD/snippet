@@ -9,7 +9,7 @@
 		var tmp = script.textContent.replace(/\\/g, '').split(';')[3].split('"');
 		result.push([
 			decodeURIComponent(tmp[0]).replace(' filename=', ''),
-			tmp[26]
+			tmp[4]
 		]);
 	} else {
 		if (!window.location.hash) {
