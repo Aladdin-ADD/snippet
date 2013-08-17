@@ -7,32 +7,32 @@
 (http://wonko.com/post/html-escaping)
 
 [HTML entity reference]
-(http://www.howtocreate.co.uk/sidehtmlentity.html)
+(http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references)
 """
 
 import re
 
 re_escape = re.compile("""[&<>"'` !@$%()=+{}[\]]""")
 escape_dict = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '`': '&#x60;',
-    ' ': '&#x20;', # or &nbsp; ?
-    '!': '&#x21;',
-    '@': '&#x40;',
-    '$': '&#x24;',
-    '%': '&#x25;',
-    '(': '&#x28;',
-    ')': '&#x29;',
-    '=': '&#x3d;',
-    '+': '&#x2b;',
-    '{': '&#x7b;',
-    '}': '&#x7d;',
-    '[': '&#x5b;',
-    ']': '&#x5d;',
+    "&": "&#x26;",
+    "<": "&#x3c;",
+    ">": "&#x3e;",
+    '"': "&#x22;",
+    "'": "&#x27;",
+    "`": "&#x60;",
+    " ": "&#x20;",
+    "!": "&#x21;",
+    "@": "&#x40;",
+    "$": "&#x24;",
+    "%": "&#x25;",
+    "(": "&#x28;",
+    ")": "&#x29;",
+    "=": "&#x3d;",
+    "+": "&#x2b;",
+    "{": "&#x7b;",
+    "}": "&#x7d;",
+    "[": "&#x5b;",
+    "]": "&#x5d;",
 }
 
 

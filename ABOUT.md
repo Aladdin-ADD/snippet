@@ -1,3 +1,10 @@
+# 2013-08-17
+
+### ./snippet/python/escape.py
+更新了一下，统一了编码，全部转成十六进制。
+
+------
+
 # 2013/08/16
 
 ### ./bookmarklet/baidu_pan.js
