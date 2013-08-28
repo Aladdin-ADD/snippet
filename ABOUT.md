@@ -1,3 +1,11 @@
+# 2013-08-28
+
+### ./snippet/javascript/pubsub.js
+算是阅读 knockoutjs 的准备吧。其实实现都差不多，最大的区别是接口设计。
+慢慢学习再优化吧。
+
+------
+
 # 2013-08-17
 
 ### ./snippet/python/escape.py
