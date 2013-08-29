@@ -2,34 +2,41 @@
 	"use strict";
 
 	var channels = {};
-	// { ch: [ {cid: x, callback: fn}, {cid: x, callback: fn} ] }
+	// { ch: [{cid: x, callback: fn}] }
 
 	var cid = 0;
 
 	var pubsub = {
 		publish: function(ch, msg) {
-			if (channels[ch]) {
-				var channel = channels[ch];
-				for (var i = channel.length - 1; i >= 0; i--) {
-					channel[i].callback(msg);
+			var chan = channels[ch];
+			if (chan) {
+				for (var i = chan.length - 1; i >= 0; --i) {
+					chan[i].callback(msg);
 				}
 			}
 		},
 
 		subscribe: function(ch, callback) {
-			if (!channels[ch]) channels[ch] = [];
-			channels[ch].push({
+			var chan = channels[ch] || (channels[ch] = []);
+			chan.push({
 				cid: ++cid,
 				callback: callback
 			});
-			return cid;
+			return cid + " " + ch;
 		},
 
-		unsubscribe: function(ch, cid) {
-			var channel = channels[ch];
-			for (var i = channel.length - 1; i >= 0; i--) {
-				if (channel[i].cid === cid)
-					channel.splice(i, 1);
+		unsubscribe: function(token) {
+			var index = token.indexOf(" ");
+			var id = token.substring(0, index);
+			var ch = token.substring(index + 1);
+			var chan = channels[ch];
+			if (chan) {
+				for (var i = chan.length - 1; i >= 0; --i) {
+					if (chan[i].cid === id) {
+						chan.splice(i, 1);
+						return;
+					}
+				}
 			}
 		}
 	};

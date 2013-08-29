@@ -1,3 +1,11 @@
+# 2013-08-29
+
+### ./snippet/javascript/pubsub.js
+取消订阅时，需要遍历数组，感觉效率稍差，就用对象改写了一下。
+结果发现速度更慢……
+
+------
+
 # 2013-08-28
 
 ### ./snippet/javascript/pubsub.js
