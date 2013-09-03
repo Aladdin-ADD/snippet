@@ -36,6 +36,18 @@ class escape:
 
     @classmethod
     def url(cls, s, allowed=None):
-        """检查 url，用白名单做限制"""
-        return
+        """检查 url，用白名单做限制
+        阻止 ``javascript:`` 之类的伪协议。
+        """
+        prefix = [
+            "//", "http://", "https://", "ftp://", "ftps://", # protocal
+            "/", "./", "../", # path
+            "#" # anchor
+        ]
+        if allowed:
+            prefix.extend(allowed)
 
+        if val.startswith(tuple(prefix)):
+            return cls.attr(val)
+        else:
+            return ""

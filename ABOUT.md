@@ -1,3 +1,12 @@
+# 2013-09-03
+
+### ./snippet/python/xss.py
+对于 xss 的了解还不够，过滤规则也还十分简单。
+总之别干不知道按不安全的事情。
+
+------
+
+
 # 2013-08-29
 
 ### ./snippet/javascript/pubsub.js
