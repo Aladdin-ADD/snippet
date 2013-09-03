@@ -36,7 +36,6 @@
     + coroutine.py 用于协程的包裹函数。
     + database.py mysql+connector 版的 torndb。
     + decompress.py 解压 gzip 压缩过的 html。
-    + escape.py 转义 html 字符。
     + kmp.py Knuth+Morris+Pratt 算法。
     + options.py tornado.options 超简化版。
     + pbkdf2.py PBKDF2加密。
@@ -44,3 +43,4 @@
     + time_it.py timeit 模块用例。
     + trie.py trie 算法。
     + urlimport.py 从网上导入模块的简单方法。
+    + xss.py 简单的 xss 防范。
