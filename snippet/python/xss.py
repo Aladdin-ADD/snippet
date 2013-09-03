@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.3
 # -*- coding: utf-8 -*-
 
+from urllib.parse import quote_plus
+
 class escape:
 
     _map_basic = str.maketrans({
@@ -30,7 +32,7 @@ class escape:
     @classmethod
     def url_params(cls, s):
         """检查参数，把特殊字符编码为 %HH"""
-        return
+        return quote_plus(s)
 
     @classmethod
     def url(cls, s, allowed=None):
