@@ -2,28 +2,28 @@
 	'use strict';
 
 	var result = [];
+	var script, content;
 
 	if (document.querySelector('#downFileButtom') !== null) {
 		/*file*/
-		var script = document.querySelectorAll('script:not([src])')[3];
-		var tmp = script.textContent.replace(/\\/g, '').split(';')[3].split('"');
+		script = document.querySelectorAll('script:not([src])')[3];
+		content = script.textContent.replace(/\\/g, '').split(';')[3].split('"');
 		result.push([
-			decodeURIComponent(tmp[0]).replace(' filename=', ''),
-			tmp[4]
+			decodeURIComponent(content[0]).replace(' filename=', ''),
+			content[4]
 		]);
 	} else {
 		if (!window.location.hash) {
 			/* one directory */
-			var script = document.querySelectorAll('script:not([src])')[3];
-			var textList = script.textContent.replace(/\\/g, '').split(';');
-			textList.splice(0, 10);
-			textList.pop();
-			var tmpList;
-			textList.forEach(function(elem) {
-				tmpList = elem.split('"');
+			script = document.querySelectorAll('script:not([src])')[3];
+			content = script.textContent.replace(/\\/g, '').split(';');
+			content.splice(0, 10);
+			content.pop();
+			content.forEach(function(elem) {
+				elem = elem.split('"');
 				result.push([
-					decodeURIComponent(tmpList[0]).replace(' filename=', ''),
-					tmpList[4]
+					decodeURIComponent(elem[0]).replace(' filename=', ''),
+					elem[4]
 				]);
 			});
 		} else {
