@@ -1,41 +1,34 @@
 (function(win) {
 	"use strict";
 
-	var channels = {};
-	// { ch: [{cid: x, callback: fn}] }
-
-	var cid = 0;
+	var channels = {}; // { ch:[fn,fn,fn], ch:[], ch:[] }
 
 	var pubsub = {
 		publish: function(ch, msg) {
 			var chan = channels[ch];
 			if (chan) {
 				for (var i = chan.length - 1; i >= 0; --i) {
-					chan[i].callback(msg);
+					chan[i](msg);
 				}
 			}
 		},
 
 		subscribe: function(ch, callback) {
 			var chan = channels[ch] || (channels[ch] = []);
-			chan.push({
-				cid: ++cid,
-				callback: callback
-			});
-			return cid + " " + ch;
+			chan.push(callback);
 		},
 
-		unsubscribe: function(token) {
-			var index = token.indexOf(" ");
-			var id = token.substring(0, index);
-			var ch = token.substring(index + 1);
+		unsubscribe: function(ch, callback) {
 			var chan = channels[ch];
 			if (chan) {
-				for (var i = chan.length - 1; i >= 0; --i) {
-					if (chan[i].cid === id) {
-						chan.splice(i, 1);
-						return;
+				if (callback) {
+					for (var i = chan.length - 1; i >= 0; --i) {
+						if (chan[i] === callback) {
+							chan.splice(i, 1);
+						}
 					}
+				} else {
+					delete channels[ch];
 				}
 			}
 		}
