@@ -14,7 +14,7 @@ from hmac import new
 
 
 
-def PBKDF2(password, salt, iterations=10000, dklen=0, hashfunc=None):
+def PBKDF2(password, salt, dklen, iterations=10000, hashfunc=None):
     """FROM DJANGO: Right now 10,000 iterations is the recommended default
     which takes 100ms on a 2.2Ghz Core 2 Duo.  This is probably the bare
     minimum for security given 1000 iterations was recommended in 2001.
@@ -53,7 +53,7 @@ def test():
 
     # from rfc6070
     def check(p, s, c, dklen, output):
-        print(PBKDF2(p, s, c, dklen, sha1) == output)
+        print(PBKDF2(p, s, dklen, c, sha1) == output)
 
     check(b'password', b'salt', 1, 20,
           b'0c60c80f961f0e71f3a9b524af6012062fe037a6')
