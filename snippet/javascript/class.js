@@ -1,81 +1,88 @@
-// there are three special property:
-// constructor's `extend`,
-// instance's `init` and `_super`.
-//
-//
-// usage:
-// var Animal = Class.extend({
-//	init: function(name) {
-//		this.name = name;
-//	}
-// });
-// var Cat = Animal.extend({
-//	init: function(name) {
-//		this._super(name);
-//		this.type = 'cat';
-//	}
-// });
-// var cat = new Cat('cake');
-// console.log(cat);
-
-
-(function() {
-	'use strict';
+(function(win) {
+	"use strict";
 
 	// Class will be used as constructor
-	var Class = function() {};
+	var Class = win.Class = function() {};
+	Object.defineProperty(Class, "extend", {
+		value: function extendClass(props) {
+			// prototype of subclass, inherit from superclass.prototype
+			var _prototype = Object.create(this.prototype);
 
-	Class.extend = function extend(properties) {
-		// instance of superclass
-		// prototype of subclass
-		var _prototype = new this();
-
-		// copy properties to prototype
-		// **caution**:
-		// define immutable objects in properties,
-		// which will be shared between instances.
-		// define mutable objects in `init` method,
-		// which will be created for each instance.
-		var _super = this.prototype;
-		for (var name in properties) {
-			if (typeof(properties[name]) === 'function' &&
-				typeof(_super[name]) === 'function' &&
-				/\b_super\b/.test(properties[name])) {
-				// if property is a function
-				// and `_super` method is invoked
-				// get `_super` from prototype
-				_prototype[name] = (function(name, fn) {
-					return function() {
-						// assign super method to `_super` temporary
-						this._super = _super[name];
-						var ret = fn.apply(this, arguments);
-						delete this._super;
-						return ret;
-					};
-				})(name, properties[name]);
-			} else {
-				// other properties
-				_prototype[name] = properties[name];
+			// copy props to prototype
+			// **caution**:
+			// objects defined in properties will be shared between instances.
+			// objects defined in `init` method will be created for each instance.
+			for (var name in props) {
+				_prototype[name] = props[name];
 			}
-		}
+			// assign superclass
+			_prototype.superclass = this.prototype;
 
-		// constructor of subclass
-		var _constructor = function Class() {
-			// if `init` method existed, apply to new object
-			if (this.init)
-				this.init.apply(this, arguments);
+			// constructor of subclass
+			var _constructor = function Class() {
+				// if `init` method existed, apply to new object
+				if (this.init)
+					this.init.apply(this, arguments);
+			};
+
+			// assign prototype for `instanceof`
+			_constructor.prototype = _prototype;
+
+			// override constructor (useless?)
+			_prototype.constructor = _constructor;
+
+			// add extend method to constructor
+			_constructor.extend = extendClass;
+
+			return _constructor;
+		}
+	});
+}(this));
+
+
+function example() {
+	"use strict";
+
+	// handwrite
+	var catA = (function() {
+		function Animal(name) {
+			this.name = name;
+		}
+		Animal.prototype.getName = function() {
+			return this.name;
 		};
 
-		// override constructor
-		_prototype.constructor = _constructor;
-		// assign prototype, make `instanceof` work
-		_constructor.prototype = _prototype;
+		function Cat(name, age) {
+			Animal.call(this, name);
+			this.age = age;
+		}
+		Cat.prototype = new Animal();
+		Cat.prototype.constructor = Cat;
+		Cat.prototype.type = "cat";
 
-		// add extend method to constructor
-		_constructor.extend = extend;
+		return new Cat("kate", 2);
+	}());
 
-		return _constructor;
-	};
+	// use Class
+	// `extend`, `init`, `superclass` are useful
+	var catB = (function() {
+		var Animal = Class.extend({
+			init: function(name) {
+				this.name = name;
+			},
+			getName: function() {
+				return this.name;
+			}
+		});
 
-	window.Class = Class;
-})();
+		var Cat = Animal.extend({
+			init: function(name, age) {
+				this.superclass.init(name);
+				this.age = age;
+			},
+			type: "cat"
+		});
+
+		return new Cat("kate", 2);
+	}());
+}

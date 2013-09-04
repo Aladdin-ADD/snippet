@@ -1,3 +1,13 @@
+# 2013-09-04
+
+### ./snippet/javascript/class.js
+用 `Object.create` 重写了一遍。
+调用父类方法，模仿了 [arale](http://aralejs.org/class/) 的做法。
+
+还补充了下演示对比的代码。
+
+------
+
 # 2013-09-03
 
 ### ./snippet/python/xss.py
