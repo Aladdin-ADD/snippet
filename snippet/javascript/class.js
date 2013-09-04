@@ -1,11 +1,13 @@
 (function(win) {
 	"use strict";
 
-	// Class will be used as constructor
 	var Class = win.Class = function() {};
+
+	// make Class.extend readonly
 	Object.defineProperty(Class, "extend", {
 		value: function extendClass(props) {
-			// prototype of subclass, inherit from superclass.prototype
+			// prototype of subclass
+			// _prototype.__proto__ === superclass.prototype
 			var _prototype = Object.create(this.prototype);
 
 			// copy props to prototype
@@ -21,11 +23,11 @@
 			// constructor of subclass
 			var _constructor = function Class() {
 				// if `init` method existed, apply to new object
-				if (this.init)
+				if (typeof(this.init) == "function")
 					this.init.apply(this, arguments);
 			};
 
-			// assign prototype for `instanceof`
+			// assign prototype, for `instanceof`
 			_constructor.prototype = _prototype;
 
 			// override constructor (useless?)
