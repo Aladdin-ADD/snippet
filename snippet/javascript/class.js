@@ -2,45 +2,41 @@
 	"use strict";
 
 	var Class = win.Class = function() {};
-	// `extend` and `superclass` are preserved
 
-	// make Class.extend readonly
-	Object.defineProperty(Class, "extend", {
-		value: function extendClass(props) {
-			// constructor of subclass
-			var _constructor = function Class() {
-				// if `init` method existed, apply to new object
-				// this pointer to new instance
-				if (typeof(this.init) == "function")
-					this.init.apply(this, arguments);
-			};
+	Class.extend = function extendClass(props) {
+		// constructor of subclass
+		var _constructor = function Class() {
+			// if `init` method existed, apply to new object
+			// this pointer to new instance
+			if (typeof(this.init) == "function")
+				this.init.apply(this, arguments);
+		};
 
-			// prototype of subclass
-			// _prototype.__proto__ === superclass.prototype
-			// _prototype.superclass === superclass.prototype
-			// this pointer to superclass
-			var _prototype = Object.create(this.prototype, {
-				constructor: { value: _constructor, writable: true }, // useless?
-				superclass: { value: this.prototype }
-			});
+		// add `extend` method to constructor
+		_constructor.extend = extendClass;
 
-			// copy props to prototype
-			// **caution**:
-			// objects defined in properties will be shared between instances.
-			// objects defined in `init` method will be created for each instance.
-			for (var name in props) {
-				_prototype[name] = props[name];
-			}
+		// prototype of subclass
+		// this pointer to superclass
+		// _prototype.__proto__ === superclass.prototype
+		// _prototype.superclass === superclass.prototype
+		var _prototype = Object.create(this.prototype);
+		_prototype.superclass = this.prototype;
+		_prototype.constructor = _constructor; // useless?
 
-			Object.defineProperties(_constructor, {
-				prototype: { value: _prototype, writable: true },
-				extend: { value: extendClass }
-			});
-
-			return _constructor;
+		// copy props to prototype, include `init`
+		// **caution**:
+		// objects defined in props will be shared among instances.
+		// objects defined in `init` method will be created for every instance.
+		for (var name in props) {
+			_prototype[name] = props[name];
 		}
-	});
-}(this));
+
+		// assign prototype
+		_constructor.prototype = _prototype;
+
+		return _constructor;
+	};
+})(this);
 
 
 function example() {
@@ -64,7 +60,7 @@ function example() {
 		Cat.prototype.type = "cat";
 
 		return new Cat("kate", 2);
-	}());
+	})();
 
 	// use Class
 	// `extend`, `init`, `superclass` are useful
@@ -87,5 +83,5 @@ function example() {
 		});
 
 		return new Cat("kate", 2);
-	}());
+	})();
 }

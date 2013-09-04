@@ -1,3 +1,11 @@
+# 2013-09-05
+
+### ./snippet/javascript/class.js
+才一天，又把 `Object.defineProperty` 去掉了。
+要不要改动 `extend` 和 superclass`， 交给用户自己判断。
+
+------
+
 # 2013-09-04
 
 ### ./snippet/javascript/class.js
