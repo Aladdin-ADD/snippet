@@ -1,6 +1,15 @@
 # 2013-09-04
 
 ### ./snippet/javascript/class.js
+`Object.create` 是减少一次实例化。
+这下改写是用 `Object.defineProperty` 来保证 `extend` 和 `superclass` 不被覆盖。
+`init` 只是检查了下是否为函数，就不报错了。
+
+------
+
+# 2013-09-04
+
+### ./snippet/javascript/class.js
 用 `Object.create` 重写了一遍。
 调用父类方法，模仿了 [arale](http://aralejs.org/class/) 的做法。
 

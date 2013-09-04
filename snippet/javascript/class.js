@@ -2,13 +2,27 @@
 	"use strict";
 
 	var Class = win.Class = function() {};
+	// `extend` and `superclass` are preserved
 
 	// make Class.extend readonly
 	Object.defineProperty(Class, "extend", {
 		value: function extendClass(props) {
+			// constructor of subclass
+			var _constructor = function Class() {
+				// if `init` method existed, apply to new object
+				// this pointer to new instance
+				if (typeof(this.init) == "function")
+					this.init.apply(this, arguments);
+			};
+
 			// prototype of subclass
 			// _prototype.__proto__ === superclass.prototype
-			var _prototype = Object.create(this.prototype);
+			// _prototype.superclass === superclass.prototype
+			// this pointer to superclass
+			var _prototype = Object.create(this.prototype, {
+				constructor: { value: _constructor, writable: true }, // useless?
+				superclass: { value: this.prototype }
+			});
 
 			// copy props to prototype
 			// **caution**:
@@ -17,24 +31,11 @@
 			for (var name in props) {
 				_prototype[name] = props[name];
 			}
-			// assign superclass
-			_prototype.superclass = this.prototype;
 
-			// constructor of subclass
-			var _constructor = function Class() {
-				// if `init` method existed, apply to new object
-				if (typeof(this.init) == "function")
-					this.init.apply(this, arguments);
-			};
-
-			// assign prototype, for `instanceof`
-			_constructor.prototype = _prototype;
-
-			// override constructor (useless?)
-			_prototype.constructor = _constructor;
-
-			// add extend method to constructor
-			_constructor.extend = extendClass;
+			Object.defineProperties(_constructor, {
+				prototype: { value: _prototype, writable: true },
+				extend: { value: extendClass }
+			});
 
 			return _constructor;
 		}
