@@ -1,5 +1,22 @@
 # 2013-09-05
 
+### ./snippet/javascript/memoize.js
+纯粹是抄下来熟悉一下。
+
+在对参数进行序列化的时候，遍历参数的代码是这样的：
+
+```javascript
+var i = arg.length;
+while (i--) {}
+```
+
+平常为了在遍历时少个变量，都是 for 循环测试大于等于 0 。
+这里的 `i--` 实在是用得很巧妙啊。
+
+------
+
+# 2013-09-05
+
 ### ./snippet/javascript/class.js
 才一天，又把 `Object.defineProperty` 去掉了。
 要不要改动 `extend` 和 superclass`， 交给用户自己判断。

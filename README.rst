@@ -25,6 +25,7 @@
 
     + class.js 类。
     + drag.js opera 里的一段拖拽代码。
+    + memoize.js 缓存计算结果。
     + mouse_direction.js 鼠标从哪个方向进入。
     + pubsub.js 订阅发布。
     + template.js 一个练手写的的 js 模板，没啥用，有机会再改进。
