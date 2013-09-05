@@ -7,7 +7,8 @@
 		publish: function(ch, msg) {
 			var chan = channels[ch];
 			if (chan) {
-				for (var i = chan.length - 1; i >= 0; --i) {
+				var i = chan.length;
+				while (i--) {
 					chan[i](msg);
 				}
 			}
@@ -22,10 +23,10 @@
 			var chan = channels[ch];
 			if (chan) {
 				if (callback) {
-					for (var i = chan.length - 1; i >= 0; --i) {
-						if (chan[i] === callback) {
+					var i = chan.length;
+					while (i--) {
+						if (chan[i] === callback)
 							chan.splice(i, 1);
-						}
 					}
 				} else {
 					delete channels[ch];
