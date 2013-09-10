@@ -1,28 +1,28 @@
 (function() {
-	'use strict';
+	"use strict";
 
 	var result = [];
 	var script, content;
 
-	if (document.querySelector('#downFileButtom') !== null) {
+	if (document.querySelector("#downFileButtom") !== null) {
 		/*file*/
-		script = document.querySelectorAll('script:not([src])')[3];
-		content = script.textContent.replace(/\\/g, '').split(';')[3].split('"');
+		script = document.querySelectorAll("script:not([src])")[3];
+		content = script.textContent.replace(/\\/g, "").split(";")[3].split('"');
 		result.push([
-			decodeURIComponent(content[0]).replace(' filename=', ''),
-			content[4]
+			decodeURIComponent(content[0]).replace(" filename=", ""),
+			content[4] === "thumbnailUrl" ? content[26] : content[4]
 		]);
 	} else {
 		if (!window.location.hash) {
 			/* one directory */
-			script = document.querySelectorAll('script:not([src])')[3];
-			content = script.textContent.replace(/\\/g, '').split(';');
+			script = document.querySelectorAll("script:not([src])")[3];
+			content = script.textContent.replace(/\\/g, "").split(";");
 			content.splice(0, 10);
 			content.pop();
 			content.forEach(function(elem) {
 				elem = elem.split('"');
 				result.push([
-					decodeURIComponent(elem[0]).replace(' filename=', ''),
+					decodeURIComponent(elem[0]).replace(" filename=", ""),
 					elem[4]
 				]);
 			});
@@ -30,10 +30,10 @@
 			/* sub directory */
 			var listUrl = 'http://pan.baidu.com/share/list' +
 				window.location.search +
-				window.location.hash.replace('#dir/path=', '&dir=') +
-				'&channel=chunlei&clienttype=0&web=1&page=1';
+				window.location.hash.replace("#dir/path=", "&dir=") +
+				"&channel=chunlei&clienttype=0&web=1&page=1";
 			var xhr = new XMLHttpRequest();
-			xhr.open('get', listUrl, false);
+			xhr.open("get", listUrl, false);
 			xhr.send(null);
 			if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
 				var resp = JSON.parse(xhr.responseText);
@@ -56,21 +56,21 @@
 			var data = [];
 			filelist.forEach(function(elem) {
 				data.push({
-					'jsonrpc': '2.0',
-					'id': 'blah',
-					'method': 'aria2.addUri',
-					'params': [[elem[1]], {'out': elem[0]}] /* url, name */
+					jsonrpc: "2.0",
+					id: "blah",
+					method: "aria2.addUri",
+					params: [[elem[1]], {"out": elem[0]}] /* url, name */
 				});
 			});
 			conn.send(JSON.stringify(data));
 		};
 		conn.onerror = function(e) {
-			pop.alert('No aria2 connection.');
+			pop.alert("No aria2 connection.");
 		};
 		conn.onmessage = function(e) {
 			var data = JSON.parse(e.data);
 			if (Array.isArray(data)) {
-				pop.alert('ok.');
+				pop.alert("ok.");
 				conn.close();
 			}
 		};
@@ -94,30 +94,30 @@
 		html += '<input type="submit" value="add to aria2" id="submit" />';
 		html += '</form>';
 
-		var pop = window.open('', 'content', 'height=500, width=900, scrollbars=yes');
+		var pop = window.open("", "content", "height=500, width=900, scrollbars=yes");
 		var doc = pop.document;
 		doc.body.innerHTML = html;
 
 		var forEach = Array.prototype.forEach;
-		var divs = doc.querySelectorAll('div.file');
+		var divs = doc.querySelectorAll("div.file");
 		forEach.call(divs, function(el) {
-			el.addEventListener('click', function(e) {
+			el.addEventListener("click", function(e) {
 				if (e.target === this) {
-					var box = this.querySelector('input[type=checkbox]');
+					var box = this.querySelector("input[type=checkbox]");
 					box.checked = box.checked ? false : true;
 				}
 			});
 		});
-		var submit = doc.querySelector('#submit');
-		submit.addEventListener('click', function(e) {
+		var submit = doc.querySelector("#submit");
+		submit.addEventListener("click", function(e) {
 			e.preventDefault();
-			var remote = doc.querySelector('#remote').value;
+			var remote = doc.querySelector("#remote").value;
 			var filelist = [];
 			forEach.call(divs, function(el) {
-				if (el.querySelector('input[type=checkbox]').checked) {
+				if (el.querySelector("input[type=checkbox]").checked) {
 					filelist.push([
-						el.querySelector('input[type=text]').value,
-						el.querySelector('a').href
+						el.querySelector("input[type=text]").value,
+						el.querySelector("a").href
 					]);
 				}
 			});
