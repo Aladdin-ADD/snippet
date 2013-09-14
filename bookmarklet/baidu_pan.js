@@ -28,7 +28,7 @@
 			content = script.textContent.replace(/\\/g, "").split(";")[3].split('"');
 			result.push([
 				decodeURIComponent(content[0]).replace(" filename=", ""),
-				content[4] === "thumbnailUrl" ? content[26] : content[4]
+				/^http:/.test(content[4]) ? content[4] : content[26]
 			]);
 		} else {
 			if (!window.location.hash) {

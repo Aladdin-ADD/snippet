@@ -1,3 +1,10 @@
+# 2013-09-14
+
+### ./bookmarklet/baidu_pan.js
+用了更靠谱的办法来检查链接。
+
+------
+
 # 2013-09-11
 
 ### ./bookmarklet/baidu_pan.js
