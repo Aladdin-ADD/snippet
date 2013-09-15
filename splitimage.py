@@ -5,7 +5,7 @@
 # $ for i in *; do mv $i ${i/_????????????????????????????????/}; done
 
 import sys
-from glob import glob
+from os import listdir
 from os.path import join
 from uuid import uuid4
 
@@ -20,9 +20,9 @@ class ImageSplit:
 
 
     def split(self):
-        for image in sorted(glob(self.dir_name + "/*")):
+        for image in sorted(listdir(self.dir_name)):
             print(">>> split '{}'...".format(image))
-            self.split_image(image)
+            self.split_image(join(self.dir_name, image))
 
 
     def split_image(self, path):
