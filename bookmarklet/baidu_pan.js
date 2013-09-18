@@ -20,15 +20,20 @@
 
 	function getUrl() {
 		var result = [];
-		var script, content;
+		var script, content, len;
 
 		if (document.querySelector("#downFileButtom") !== null) {
 			/*file*/
 			script = document.querySelectorAll("script:not([src])")[3];
-			content = script.textContent.replace(/\\/g, "").split(";")[3].split('"');
+			content = script.textContent.split(";")[3].replace(/\\/g, "").split('"');
+			len = content.length;
+			while (len--) {
+				if (/^dlink$/.test(content[len]))
+					break;
+			}
 			result.push([
 				decodeURIComponent(content[0]).replace(" filename=", ""),
-				/^http:/.test(content[4]) ? content[4] : content[26]
+				content[len+2]
 			]);
 		} else {
 			if (!window.location.hash) {
