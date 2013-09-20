@@ -28,7 +28,7 @@
 			content = script.textContent.split(";")[3].replace(/\\/g, "").split('"');
 			len = content.length;
 			while (len--) {
-				if (/^dlink$/.test(content[len]))
+				if ("dlink" === content[len])
 					break;
 			}
 			result.push([
