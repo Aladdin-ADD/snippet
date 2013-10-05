@@ -1,5 +1,6 @@
 // ==UserScript==
 // @include http://pan.baidu.com/share/link*
+// @include http://pan.baidu.com/s/*
 // ==/UserScript==
 
 
