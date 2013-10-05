@@ -35,7 +35,7 @@
   - python
 
     + chunked.py 处理 chunked 数据。
-    + coroutine.py 用于协程的包裹函数。
+    + coroutine.py 模仿 tspl4 的思路写的协程。
     + database.py mysql+connector 版的 torndb。
     + decompress.py 解压 gzip 压缩过的 html。
     + kmp.py Knuth+Morris+Pratt 算法。

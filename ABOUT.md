@@ -1,3 +1,11 @@
+# 2013-10-05
+
+### ./snippet/python/coroutine.py
+简单的协程实现，后面会设法完善。
+代码稍微复杂一点就看不懂，感觉自己太废了……
+
+------
+
 # 2013-09-14
 
 ### ./bookmarklet/baidu_pan.js
