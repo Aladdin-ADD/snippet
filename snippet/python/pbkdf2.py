@@ -5,6 +5,9 @@
 PBKDF2 implementation.
 see rfc2898 for details.
 thanks to mitsuhiko's python-pbkdf2 and django's crypto.
+
+NOTE:
+use ``hashlib.pbkdf2_hmac`` in python 3.4.
 """
 
 from binascii import hexlify
