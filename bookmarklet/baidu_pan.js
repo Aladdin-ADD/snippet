@@ -1,8 +1,8 @@
 // ==UserScript==
 // @include http://pan.baidu.com/share/link*
+// @include http://yun.baidu.com/share/link*
 // @include http://pan.baidu.com/s/*
 // ==/UserScript==
-
 
 (function() {
 	"use strict";
@@ -11,6 +11,7 @@
 		var oldBtn = document.querySelector("#barAllCmdDownload") ||
 			document.querySelector("#downFileButtom");
 		var newBtn = oldBtn.cloneNode();
+		newBtn.id += "x";
 		newBtn.addEventListener("click", function(e) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -23,18 +24,13 @@
 		var result = [];
 		var script, content, len;
 
-		if (document.querySelector("#downFileButtom") !== null) {
+		if (document.querySelector("#downFileButtomx") !== null) {
 			/*file*/
 			script = document.querySelectorAll("script:not([src])")[3];
-			content = script.textContent.split(";")[3].replace(/\\/g, "").split('"');
-			len = content.length;
-			while (len--) {
-				if ("dlink" === content[len])
-					break;
-			}
+			content = script.textContent;
 			result.push([
-				decodeURIComponent(content[0]).replace(" filename=", ""),
-				content[len+2]
+				content.split(";")[0].split("=")[1].replace(/"/g, ""),
+				window._dlink
 			]);
 		} else {
 			if (!window.location.hash) {
@@ -81,7 +77,11 @@
 						jsonrpc: "2.0",
 						id: "blah",
 						method: "aria2.addUri",
-						params: [[elem[1]], {"out": elem[0]}] /* url, name */
+						params: [
+							[elem[1]], {
+							"out": elem[0]
+						}
+						] /* url, name */
 					});
 				});
 				conn.send(JSON.stringify(data));
