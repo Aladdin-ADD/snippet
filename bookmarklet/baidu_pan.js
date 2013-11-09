@@ -48,10 +48,11 @@
 				});
 			} else {
 				/* sub directory */
-				var listUrl = 'http://pan.baidu.com/share/list' +
-				window.location.search +
-					window.location.hash.replace("#dir/path=", "&dir=") +
-					"&channel=chunlei&clienttype=0&web=1&page=1";
+
+				var listUrl = "http://pan.baidu.com/share/list?" +
+					window.location.hash.replace("#dir/path=", "dir=") +
+					"&uk=" + FileUtils.share_uk +
+					"&shareid=" + FileUtils.share_id;
 				var xhr = new XMLHttpRequest();
 				xhr.open("get", listUrl, false);
 				xhr.send(null);
