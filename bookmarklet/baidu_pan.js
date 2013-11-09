@@ -4,6 +4,8 @@
 // @include http://pan.baidu.com/s/*
 // ==/UserScript==
 
+// thanks to https://userscripts.org/scripts/show/162138
+
 (function() {
 	"use strict";
 
@@ -22,16 +24,25 @@
 
 	function getUrl() {
 		var result = [];
-		var script, content, len;
+		var url = "http://pan.baidu.com/share/";
+		var script, content, len, xhr, resp;
 
 		if (document.querySelector("#downFileButtomx") !== null) {
 			/*file*/
-			script = document.querySelectorAll("script:not([src])")[3];
-			content = script.textContent;
-			result.push([
-				content.split(";")[0].split("=")[1].replace(/"/g, ""),
-				window._dlink
-			]);
+			xhr = new XMLHttpRequest();
+			url += "download?bdstoken=null" +
+				"&uk=" + FileUtils.share_uk +
+				"&shareid=" + FileUtils.share_id +
+				"&fid_list=%5B" + FileUtils.fsId + "%5D";
+			xhr.open("get", url, false);
+			xhr.send(null);
+			if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+				resp = JSON.parse(xhr.responseText);
+				result.push([
+					FileUtils.whiteListShareInfo,
+					resp.dlink
+				]);
+			}
 		} else {
 			if (!window.location.hash) {
 				/* one directory */
@@ -48,16 +59,15 @@
 				});
 			} else {
 				/* sub directory */
-
-				var listUrl = "http://pan.baidu.com/share/list?" +
+				url += "list?" +
 					window.location.hash.replace("#dir/path=", "dir=") +
 					"&uk=" + FileUtils.share_uk +
 					"&shareid=" + FileUtils.share_id;
-				var xhr = new XMLHttpRequest();
-				xhr.open("get", listUrl, false);
+				xhr = new XMLHttpRequest();
+				xhr.open("get", url, false);
 				xhr.send(null);
 				if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-					var resp = JSON.parse(xhr.responseText);
+					resp = JSON.parse(xhr.responseText);
 					resp.list.forEach(function(elem) {
 						result.push([elem.server_filename, elem.dlink]);
 					});
