@@ -24,20 +24,21 @@
 
 	function getUrl() {
 		var result = [];
-		var url = "http://pan.baidu.com/share/";
-		var script, content, len, xhr, resp;
+		var xhr;
+		var url = "http://pan.baidu.com/share/download?channel=chunlei&clienttype=0&web=1" +
+			"&uk=" + FileUtils.share_uk +
+			"&shareid=" + FileUtils.share_id;
+		var data;
+		var resp;
 
-		if (document.querySelector("#downFileButtomx") !== null) {
+		if (FileUtils.fsId) {
 			/*file*/
 			xhr = new XMLHttpRequest();
-			url += "download?bdstoken=null" +
-				"&uk=" + FileUtils.share_uk +
-				"&shareid=" + FileUtils.share_id +
-				"&fid_list=%5B" + FileUtils.fsId + "%5D";
-			xhr.open("get", url, false);
+			xhr.open("get", url + "&fid_list=%5B" + FileUtils.fsId + "%5D", false);
 			xhr.send(null);
 			if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
 				resp = JSON.parse(xhr.responseText);
+				console.log(resp);
 				result.push([
 					FileUtils.whiteListShareInfo,
 					resp.dlink
@@ -46,30 +47,51 @@
 		} else {
 			if (!window.location.hash) {
 				/* one directory */
-				script = document.querySelectorAll("script:not([src])")[3];
-				content = script.textContent.replace(/\\/g, "").split(";");
-				content.splice(0, 10);
-				content.pop();
-				content.forEach(function(elem) {
-					elem = elem.split('"');
-					result.push([
-						decodeURIComponent(elem[0]).replace(" filename=", ""),
-						elem[4]
-					]);
+				var script = document.querySelectorAll("script:not([src])")[3];
+				var content = script.textContent.split("applicationConfig,");
+				var fileList = content[1].split("},{");
+				fileList.map(function(e) {
+					xhr = new XMLHttpRequest();
+					var l = e.replace(/[[\]\\{}")]/g, "").split(",");
+					for (var i = 0; i < l.length; i++) {
+						if (/fs_id/.test(l[i])) {
+							xhr.open("get", url + "&fid_list=%5B" + l[i].split(":")[1] + "%5D", false);
+							xhr.send(null);
+							if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+								resp = JSON.parse(xhr.responseText);
+								console.log(resp);
+							}
+						} else if (/server_filename/.test(l[i])) {
+							result.push([
+								l[i].split(":")[1],
+								resp.dlink
+							]);
+							break;
+						}
+					}
 				});
 			} else {
 				/* sub directory */
-				url += "list?" +
+				xhr = new XMLHttpRequest();
+				var tmpurl = "http://pan.baidu.com/share/list?" +
 					window.location.hash.replace("#dir/path=", "dir=") +
 					"&uk=" + FileUtils.share_uk +
 					"&shareid=" + FileUtils.share_id;
-				xhr = new XMLHttpRequest();
-				xhr.open("get", url, false);
+				xhr.open("get", tmpurl, false);
 				xhr.send(null);
 				if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-					resp = JSON.parse(xhr.responseText);
-					resp.list.forEach(function(elem) {
-						result.push([elem.server_filename, elem.dlink]);
+					var r = JSON.parse(xhr.responseText);
+					r.list.forEach(function(elem) {
+						data = "fid_list=%5B" + elem.fs_id + "%5D";
+						xhr = new XMLHttpRequest();
+						xhr.open("post", url, false);
+						xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+						xhr.send(data);
+						if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+							resp = JSON.parse(xhr.responseText);
+							console.log(resp);
+							result.push([elem.server_filename, resp.dlink]);
+						}
 					});
 				}
 			}
