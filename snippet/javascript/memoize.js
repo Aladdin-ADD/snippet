@@ -1,35 +1,36 @@
 // http://addyosmani.com/blog/faster-javascript-memoization/
 
-(function(win) {
-	"use strict";
+(function() {
+    "use strict";
 
-	function hashArguments(args) {
-		var key = "";
-		var i = args.length;
-		var currentArg = null;
-		while (i--) {
-			currentArg = args[i];
-			key += (currentArg === Object(currentArg)) ?
-				JSON.stringify(currentArg) : currentArg;
-		}
-		return key;
-	}
+    function hashArguments(args) {
+        var key = "";
+        var i = args.length;
+        var currentArg = null;
+        while (i--) {
+            currentArg = args[i];
+            key += (currentArg === Object(currentArg)) ?
+                JSON.stringify(currentArg) : currentArg;
+        }
+        return key;
+    }
 
-	function memoize(fn, hashFunction) {
-		var hash = (typeof(hashFunction) == "function") ?
-			hashFunction : hashArguments;
+    function memoize(fn, hashFunction) {
+        var hash = (typeof(hashFunction) == "function") ?
+            hashFunction : hashArguments;
 
-		function wrapper() {
-			var key = hash(Array.prototype.slice.call(arguments));
-			return (key in wrapper.memoized) ?
-				wrapper.memoized[key] :
-				wrapper.memoized[key] = fn.apply(this, arguments);
-		}
+        function wrapper() {
+            var key = hash(Array.prototype.slice.call(arguments));
+            return (key in wrapper.memoized) ?
+                wrapper.memoized[key] :
+                wrapper.memoized[key] = fn.apply(this, arguments);
+        }
 
-		wrapper.memoized = {};
+        wrapper.memoized = {};
 
-		return wrapper;
-	}
+        return wrapper;
+    }
 
-	win.memoize = memoize;
-})(this);
+    var win = (0, eval)("this");
+    win.memoize = memoize;
+})();
