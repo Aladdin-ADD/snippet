@@ -25,6 +25,7 @@
   - javascript
 
     + class.js 类。
+    + disable_scroll.js 禁用滚动。
     + drag.js opera 里的一段拖拽代码。
     + memoize.js 缓存计算结果。
     + mouse_direction.js 鼠标从哪个方向进入。
