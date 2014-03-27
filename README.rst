@@ -30,7 +30,7 @@
     + memoize.js 缓存计算结果。
     + mouse_direction.js 鼠标从哪个方向进入。
     + pubsub.js 订阅发布。
-    + template.js 一个练手写的的 js 模板，没啥用，有机会再改进。
+    + template.js 比起最初的版本，有了些许改进。
     + type.js 类型检查。
 
   - python

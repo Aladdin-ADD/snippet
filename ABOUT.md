@@ -1,3 +1,12 @@
+# 2014-03-27
+
+### ./snippet/javascript/template.js
+强迫症发作，使用严格模式，又想要 `with`。
+了解了 `eval` 和 `new Function` 之后，找到方法了。
+
+------
+
+
 # 2013-11-09
 
 度娘直接把 `dlink` 给去掉了，开始真得没弄明白。

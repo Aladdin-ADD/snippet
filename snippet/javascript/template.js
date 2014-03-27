@@ -1,35 +1,59 @@
-/*
- * Usage:
- * var output = tmpl('id', 'data');
- * var output = tmpl('id').generate('data');
- * var output = tmpl.template('string').generate('data');
- *
- * Syntax:
- * {{ expr }}
- * {% if (...) %}... {% else if (...) %}... {% else %}... {% end %}
- * {% for (...; ...; ...) %}... {% end %}
+/**
+ * tmpl - a simple template system
+ * @version 0.2
  */
 
 (function() {
-	var template = function(str) {
-		var compiled = '(function(data){with(data){var code="' +
-			str.replace(/\s+/g, ' ')
-			.replace(/{{/g, '"+')
-			.replace(/}}/g, '+"')
-			.replace(/{%\s?end\s?%}/g, '";}code+="')
-			.replace(/{%\s?else/g, '";}else')
-			.replace(/{%/g, '";').replace(/%}/g, '{code+="') +
-			'";}return code;})';
-		return { generate: eval(compiled) };
-	};
+    "use strict";
+    /**
+     * Syntas:
+     * {{ expr }}
+     * {% if (...) %}...{% else if (...) %}...{% else %}...{% end %}
+     * {% for (...;...;...) %}...{% end %}
+     * {% for (... in ...) %}...{% end %}
+     *
+     * Caution:
+     * The `html generator` is created in GLOBAL scope by `new Function`.
+     * You should avoid pulloting GLOBAL in template string.
+     *
+     * @method tmpl
+     * @param {String} s template string
+     * @return {Function} html generator
+     * @example
+     *      var t = tmpl("<p>{{ value }}</P>");
+     *      var o = t( {value: "simple example"} );
+     */
+    function tmpl(s) {
+        return new Function(
+            "with (arguments[0] || {}) {var o='" +
+            s.replace(/\s+/g, " ")
+            .replace(/{{/g, "'+")
+            .replace(/}}/g, "+'")
+            .replace(/{%\s*end\s*%}/g, "';}o+='")
+            .replace(/{%\s*else/g, "';}else")
+            .replace(/{%/g, "';")
+            .replace(/%}/g, "{o+='") +
+                "';}return o;"
+        );
+    }
 
-	var cache = {};
-	var tmpl = function(id, data) {
-		if (!(id in cache))
-			cache[id] = template(document.getElementById(id).innerHTML);
-		return data ? cache[id].generate(data) : cache[id];
-	};
-	tmpl.template = template;
+    tmpl.cache = {};
+    /**
+     * Convert template fragment to html generator & store in tmpl.cache
+     *
+     * @method get
+     * @param {String} selector Used to get template fragment
+     * @return {Function} html generator
+     * @example
+     *      var t = tmpl.get("#template-id");
+     *      var o = t( {...} );
+     */
+    tmpl.get = function(selector) {
+        if (! (selector in tmpl.cache))
+            tmpl.cache[selector] = tmpl(document.querySelector(selector).innerHTML);
+        return tmpl.cache[selector];
+    };
 
-	window.tmpl = tmpl;
+    // export to window
+    window.tmpl = tmpl
 })();
