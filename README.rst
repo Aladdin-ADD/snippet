@@ -25,6 +25,7 @@
   - javascript
 
     + class.js 类。
+    + disable_console.js 禁用 chrome 控制台。
     + disable_scroll.js 禁用滚动。
     + drag.js opera 里的一段拖拽代码。
     + memoize.js 缓存计算结果。
