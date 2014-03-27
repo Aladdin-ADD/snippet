@@ -1,6 +1,6 @@
 /**
  * tmpl - a simple template system
- * @version 0.2
+ * @version 0.2.1
  */
 
 (function() {
@@ -17,15 +17,16 @@
      * You should avoid pulloting GLOBAL in template string.
      *
      * @method tmpl
-     * @param {String} s template string
+     * @param {String} str template string
      * @return {Function} html generator
      * @example
      *      var t = tmpl("<p>{{ value }}</P>");
      *      var o = t( {value: "simple example"} );
      */
-    function tmpl(s) {
+    function tmpl(str) {
         return new Function(
-            "with (arguments[0] || {}) {var o='" +
+            "d", // data, { key: value }
+            "with(d||{}){var o='" +
             s.replace(/\s+/g, " ")
             .replace(/{{/g, "'+")
             .replace(/}}/g, "+'")
@@ -55,5 +56,5 @@
     };
 
     // export to window
-    window.tmpl = tmpl
+    window.tmpl = tmpl;
 })();

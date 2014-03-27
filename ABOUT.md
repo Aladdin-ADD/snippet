@@ -1,6 +1,13 @@
 # 2014-03-27
 
 ### ./snippet/javascript/template.js
+之前用的 `arguments[0]` ，这是脑袋抽了吗……
+
+------
+
+# 2014-03-27
+
+### ./snippet/javascript/template.js
 强迫症发作，使用严格模式，又想要 `with`。
 了解了 `eval` 和 `new Function` 之后，找到方法了。
 
