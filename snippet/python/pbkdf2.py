@@ -8,55 +8,22 @@ thanks to mitsuhiko's python-pbkdf2 and django's crypto.
 
 NOTE:
 use ``hashlib.pbkdf2_hmac`` in python 3.4.
+
+Update to py3.4
 """
 
 from binascii import hexlify
-from itertools import starmap
-from operator import xor
-from hmac import new
+from hashlib import pbkdf2_hmac
 
-
-
-def PBKDF2(password, salt, dklen, iterations=10000, hashfunc=None):
-    """FROM DJANGO: Right now 10,000 iterations is the recommended default
-    which takes 100ms on a 2.2Ghz Core 2 Duo.  This is probably the bare
-    minimum for security given 1000 iterations was recommended in 2001.
-    """
-    assert dklen > 0
-    if hashfunc is None:
-        from hashlib import sha512
-        hashfunc = sha512
-
-    mac = new(password, None, hashfunc)
-    hlen = mac.digest_size
-
-    if dklen > (2 ** 32 - 1) * hlen:
-        raise OverflowError('derived key too long')
-
-    def _pseudorandom(u):  # PRF
-        m = mac.copy()
-        m.update(u)
-        return m.digest()
-
-    T_list = []
-    for i in range(1, 1 - (-dklen // hlen)):  # T{1} to T{ceil(dklen/hlen)}
-        u = _pseudorandom(salt + i.to_bytes(4, byteorder='big', signed=False))
-        T_i = u
-        for j in range(iterations - 1):  # U{1} to U{iteration}
-            u = _pseudorandom(u)
-            T_i = starmap(xor, zip(T_i, u))
-        T_list.append(bytes(T_i))
-
-    DK = b''.join(T_list)[:dklen]
-    return hexlify(DK)
+def PBKDF2(password, salt, dklen, iterations=10000, hashfunc="sha512"):
+    dk = pbkdf2_hmac(hashfunc, password, salt, iterations, dklen)
+    return hexlify(dk)
 
 
 def test():
-    from hashlib import sha1
-
     # from rfc6070
     def check(p, s, c, dklen, output):
-        print(PBKDF2(p, s, dklen, c, sha1) == output)
+        print(PBKDF2(p, s, dklen, c, "sha1") == output)
 
     check(b'password', b'salt', 1, 20,
           b'0c60c80f961f0e71f3a9b524af6012062fe037a6')
