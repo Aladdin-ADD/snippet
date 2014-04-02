@@ -33,6 +33,7 @@
     + pubsub.js 订阅发布。
     + template.js 比起最初的版本，有了些许改进。
     + type.js 类型检查。
+    + ie_version.js 检查 ie 版本。
 
   - python
 
