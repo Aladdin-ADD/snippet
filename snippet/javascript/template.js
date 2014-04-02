@@ -27,7 +27,7 @@
         return new Function(
             "d", // data, { key: value }
             "with(d||{}){var o='" +
-            s.replace(/\s+/g, " ")
+            str.replace(/\s+/g, " ")
             .replace(/{{/g, "'+")
             .replace(/}}/g, "+'")
             .replace(/{%\s*end\s*%}/g, "';}o+='")
