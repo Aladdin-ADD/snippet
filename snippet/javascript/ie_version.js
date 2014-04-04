@@ -1,4 +1,5 @@
 // from knockout.js
+// work on ie5-9 (http://www.quirksmode.org/css/condcom.html)
 
 (function() {
     "use strict";
@@ -9,7 +10,7 @@
 
         while (true) {
             div.innerHTML = "<!--[if gt IE " + (++version) + "]><i></i><![endif]-->";
-            // iElems will update after div changed.
+            // iElems is living. it will be updated when div changed.
             if (! iElems[0])
                 break;
         }
