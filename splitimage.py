@@ -27,8 +27,10 @@ class ImageSplit:
 
     def split_image(self, path):
         image = Image.open(path)
+        if image.format != "JPEG" and image.mode != "RGB":
+            image = image.convert("RGB")
         filename = join(self.dir_name,
-                        "{:>04}_" + uuid4().hex + "." + image.format.lower())
+                        "{:>04}_" + uuid4().hex + ".jpeg")
         width, height = image.size
         if width > height:
             half = int(width / 2)
