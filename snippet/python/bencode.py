@@ -1,86 +1,45 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-def _decode_int(data):
-    data = data[1:]
-    integer, _, data = data.partition("e")
-    return (int(integer), data)
-
-
-
-
-def _decode_str(data):
-    length, _, data = data.partition(":")
-    length = int(length)
-    return (data[:length], data[length:])
-
-
-
-
-def _decode_list(data):
-    data = data[1:]
-    result = []
-
-    while data:
-        dt = data[0]
-        if dt == "e":
-            return (result, data[1:])
-        elif dt == "i":
-            _, data = _decode_int(data)
-        elif dt == "l":
-            _, data = _decode_list(data)
-        elif dt == "d":
-            _, data = _decode_dict(data)
-        else:
-            _, data = _decode_str(data)
-        result.append(_)
-
-
-
-
-def _decode_dict(data):
-    data = data[1:]
-    result = {}
-    key = None
-
-    while data:
-        dt = data[0]
-        if dt == "e":
-            if key: raise Exception("missing value")
-            return (result, data[1:])
-        elif dt == "i":
-            _, data = _decode_int(data)
-        elif dt == "l":
-            _, data = _decode_list(data)
-        elif dt == "d":
-            _, data = _decode_dict(data)
-        else:
-            _, data = _decode_str(data)
-            if not key:
-                key = _
-                continue
-
-        if not key: raise Exception("invalid input string")
-        result[key] = _
-        key = None
-
-
-
 
 def decode(data):
-    dt = data[0]
+    def _decode(data):
+        dt = data[0]
+        if dt == "i":
+            data = data[1:]
+            integer, _, data = data.partition("e")
+            return (int(integer), data)
+        elif dt == "l":
+            data = data[1:]
+            blist = []
+            while True:
+                dt = data[0]
+                if dt == "e":
+                    return (blist, data[1:])
+                else:
+                    item, data = _decode(data)
+                    blist.append(item)
+        elif dt == "d":
+            data = data[1:]
+            bdict = {}
+            key = None
+            while True:
+                dt = data[0]
+                if dt == "e":
+                    return (bdict, data[1:])
+                else:
+                    key_value, data = _decode(data)
+                    if key:
+                        bdict[key] = key_value
+                        key = None
+                    else:
+                        key = key_value
+        else:
+            length, _, data = data.partition(":")
+            length = int(length)
+            return (data[:length], data[length:])
 
-    if dt == "i":
-        ret = _decode_int(data)
-    elif dt == "l":
-        ret = _decode_list(data)
-    elif dt == "d":
-        ret = _decode_dict(data)
-    else:
-        ret = _decode_str(data)
-
-    return ret[0]
-
+    return _decode(data)[0]
 
 
 
