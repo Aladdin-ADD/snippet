@@ -37,6 +37,7 @@
 
   - python
 
+    + bencode.py bt 用的 bencode。
     + chunked.py 处理 chunked 数据。
     + coroutine.py 模仿 tspl4 的思路写的协程。
     + database.py mysql+connector 版的 torndb。

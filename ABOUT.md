@@ -1,3 +1,13 @@
+# 2014-04-23
+
+### ./snippet/python/bencode.py
+最近想熟悉一下DHT，所以写了这个。
+实现代码丑了点……准备改成不用递归的写法。
+
+
+------
+
+
 # 2014-03-27
 
 ### ./snippet/javascript/template.js
