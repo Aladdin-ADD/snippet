@@ -43,6 +43,7 @@ def decode(data):
 
 
 
+
 def encode(data):
     if isinstance(data, str):
         return "{}:{}".format(len(data), data)
@@ -57,3 +58,30 @@ def encode(data):
         return "d{}e".format("".join(result))
     else:
         raise Exception("unsupported type {}".format(type(data)))
+
+
+
+
+if __name__ == '__main__':
+    test_cases = [
+        ("10:helloworld", "helloworld"),
+        ("12:0.0.0.0:3000", "0.0.0.0:3000"),
+
+        ("i0e", 0),
+        ("i42e", 42),
+        ("i-42e", -42),
+
+        ("l5:helloi42ee", ["hello", 42]),
+        ("l5:helloi42eli-1ei0ei1ei2ei3e4:fouree", ['hello', 42, [-1, 0, 1, 2, 3, 'four']]),
+        ("lllleeee", [[[[]]]]),
+        ("llelelelleee", [[], [], [], [[]]]),
+        ("ldededee", [{}, {}, {}]),
+
+        ("de", {}),
+        ("lld9:favoritesleeei500ee", [[{"favorites": []}], 500]),
+        ("d3:agei100ee", {"age": 100}),
+        ("d4:name8:the dudee", {"name": "the dude"}),
+    ]
+    for case in test_cases:
+        assert decode(case[0]) == case[1]
+        assert encode(case[1]) == case[0]
