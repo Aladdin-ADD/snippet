@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
+import io
 
 
-from io import BytesIO
+def chunked_handler(data):
+    """http://tools.ietf.org/html/rfc2616#section-3.6.1"""
+    buf = io.BytesIO(data)
+    ret = io.BytesIO()
 
-
-def handle_chunked(data):
-    """decode chunked data.
-    see <http://tools.ietf.org/html/rfc2616#section-3.6.1> for details.
-    """
-    data_buffer = BytesIO()
-
-    while data:
-        head, tail = data.split(b"\r\n", maxsplit=1)
-
-        index = head.find(b"(")
-        if index != -1:
-            head = int(head[:index], 16)
+    while True:
+        size_header = buf.readline()
+        parts = size_header.split(b";")
+        size = int(parts[0], 16)
+        if size:
+            ret.write(buf.read(size))
         else:
-            head = int(head, 16)
+            break
+        crlf = buf.readline()
 
-        data_buffer.write(tail[:head])
-        data = tail[head + 2:]
+    return ret.getvalue()
 
-    return data_buffer.getvalue()
