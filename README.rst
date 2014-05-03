@@ -1,5 +1,5 @@
 + ass2srt.py 把 ass 字幕转换成 srt 字幕。
-+ asynclient.py 异步下载网页。
++ asynclient.py 异步下载。
 + yuedu.py 下载网易云阅读的脚本。
 + redisub.py 无阻塞的 redis subscribe 命令。
 + splitimage.py 大图切割。

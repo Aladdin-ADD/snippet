@@ -1,324 +1,191 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-"""A (too) simple asynchronous http client (use epoll).
-
-Usage:
-```python
-from asynclient import Asynclient
-from bs4 import BeautifulSoup
-from pprint import pprint
-
-
-# callback function take one argument, the Response object.
-def callback(response):
-    print(response.request)
-
-    print(response.http) # http version
-    print(response.status_code) # status code
-    print(response.status) #reason phrase
-
-    pprint(response.header) # header
-
-    if 200 <= response.status_code < 300:
-        soup = BeautifulSoup(response.body) # body
-        print(soup.prettfy())
+__version__ = "0.2.0"
+__all__ = [
+    "co",
+    "run",
+    "stop",
+    "close",
+    "fetch",
+]
 
 
-def wrapper(*args, **kwargs):
-    def callback(response):
-        pass
-    return callback
-
-
-# create client.
-client1 = Asynclient()
-client2 = Asynclient()
-
-
-# use `get/post` to add task, `callback` will be called when the task finished.
-# and request will redirect 5 times by default,
-# set redirection to 0 to disable redirection.
-# the headers is supported(?).
-client1.get("http://docs.python.org/3/tutorial/index.html", callback)
-client1.get("http://google.org/", callback=callback, redirection=0)
-
-
-# use closure as callback.
-client2.get("http://docs.python.org/3/reference/index.html", wrapper())
-# use the post method, the data should be bytes.
-client2.post(url, data=b"", callback=lambda x: print(x), redirection=10)
-
-
-# start tasks.
-client2.start()
-client1.start()
-```
-"""
-
-import socket
-import select
-import ssl
-import re
 from urllib.parse import urlparse
-from collections import namedtuple
-from io import BytesIO
-
-
-READ = select.EPOLLIN
-WRITE = select.EPOLLOUT
-STOP = select.EPOLLHUP | select.EPOLLERR
-
-
-TASK = namedtuple(
-    "task", ["method", "url", "body", "headers", "callback", "redirection"])
-
-
-CLIENT = namedtuple(
-    "client", ["socket", "request", "response", "callback", "redirection"])
+import asyncio
+import io
 
 
 
 
-def _ssl_wrap_recv(s):
-    def recv(bufsize):
-        while True:
-            try:
-                return ssl.SSLSocket.recv(s, bufsize)
-            except ssl.SSLError:
-                pass
-    return recv
+co = asyncio.coroutine
+
+loop = asyncio.get_event_loop()
+
+run = loop.run_until_complete
+stop = loop.stop
+close = loop.close
 
 
 
 
-class Asynclient:
-    re_url = re.compile(
-        r"""(?ix)
-        ^https?://
-        [^/]+
-        \.
-        [^/]{2,4}
-        (/?)(?(1) .* | $)
-        """)
-
-
-    def __init__(self):
-        self.tasks = []
-        self.clients = {}
-
-
-    def _parse_url(self, url):
-        """parse url, return (host, port, path, use_ssl)."""
-        m = self.re_url.match(url)
-        if not m:
-            raise ValueError("invalid url: " + url)
-
-        r = urlparse(url)
-
-        if r.scheme == "http":
-            port = r.port or 80
-            use_ssl = False
-        else:
-            port = r.port or 443
-            use_ssl = True
-
-        path = r.path or "/"
-        if r.query:
-            path += "?" + r.query
-
-        return (r.hostname, port, path, use_ssl)
-
-
-    def _create_socket(self, host, port, use_ssl):
-        """create non-blocking socket connection"""
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        if use_ssl:
-            s = ssl.wrap_socket(s, do_handshake_on_connect=False)
-            s.recv = _ssl_wrap_recv(s)
-        s.connect((host, port))
-        s.setblocking(0)
-        return s
-
-
-    def _create_clients(self):
-        """create client and clear self.tasks"""
-        for task in self.tasks:
-            self._create_client(task)
-        self.tasks.clear()
-
-
-    def _create_client(self, task):
-        """create client"""
-        (host, port, path, use_ssl) = self._parse_url(task.url)
-
-        task.headers["Host"] = host + ":" + str(port)
-        request = Request(task.method, path, task.headers, task.body)
-
-        client_socket = self._create_socket(host, port, use_ssl)
-
-        fileno = client_socket.fileno()
-
-        self.clients[fileno] = CLIENT(
-            client_socket, request, BytesIO(),
-            task.callback, task.redirection)
-
-        self.epoll.register(fileno, WRITE)
-
-
-    def get(self, url, callback, headers={}, redirection=5):
-        self.tasks.append(
-            TASK("GET", url, b"", headers, callback, redirection))
-
-
-    def post(self, url, body, callback, headers={}, redirection=5):
-        self.tasks.append(
-            TASK("POST", url, body, headers, callback, redirection))
-
-
-    def start(self):
-        """create epoll and clients, start loop and close everything"""
-        try:
-            self.epoll = select.epoll()
-            self._create_clients()
-            self._loop(self.tasks, self.clients, self.epoll)
-        finally:
-            self.epoll.close()
-            for client in self.clients.values():
-                client.socket.close()
-
-
-    def _loop(self, tasks, clients, epoll):
-        """the main loop"""
-        while clients:
-            if tasks:
-                # add task in callback
-                self._create_clients()
-
-            for fileno, event in epoll.poll():
-                client = clients[fileno]
-
-                if event & WRITE:
-                    data = client.request._get()
-                    size = client.socket.send(data)
-                    if len(data) > size:
-                        client.request._set(data[size:])
-                    else:
-                        epoll.modify(fileno, READ)
-
-                elif event & READ:
-                    data = client.socket.recv(8192)
-                    if data:
-                        client.response.write(data)
-                    else:
-                        # all data received.
-                        epoll.modify(fileno, 0)
-                        client.socket.shutdown(socket.SHUT_RDWR)
-                        self._response_handle(client)
-
-                elif event & STOP:
-                    epoll.unregister(fileno)
-                    client.socket.close()
-                    del clients[fileno]
-
-
-    def _response_handle(self, client):
-        """callback or redirect"""
-        response = Response(client.request, client.response.getvalue())
-        r = response.redirection(client.redirection)
-
-        if r:
-            self._create_client(TASK(callback=client.callback, **r))
-        else:
-            client.callback(response)
-
-
-
-
-class Request:
-    def __init__(self, method, path, headers, body):
-        self.http = "HTTP/1.0"
+class HTTPRequest:
+    def __init__(self, url, method="GET", headers=None, body=b"", *,
+                 ua="asynclient/"+__version__):
+        self.url = ("http://" + url) if "://" not in url else url
+        self._parse_url()
         self.method = method
-        self.path = path
+        self.headers = {
+            "Accept-Encoding": "identity",
+            "Connection": "close",
+            "Host": self.netloc,
+            "User-Agent": ua,
+        }
+        if headers:
+            self.headers.update(headers)
+        self.body = body.encode() if isinstance(body, str) else body
+        self.req = None
+
+
+    def _parse_url(self):
+        parts = urlparse(self.url)
+        self.netloc = parts.netloc
+        ssl = parts.scheme == "https"
+        self.port = parts.port or (443 if ssl else 80)
+        path = parts.path or "/"
+        self.path = "{}?{}".format(path, parts.query) if parts.query else path
+
+
+    @property
+    def request(self):
+        if not self.req:
+            lines = ["{} {} HTTP/1.0".format(self.method, self.path)]
+            lines.extend(("{}: {}".format(k, v))
+                         for k, v in self.headers.items())
+            lines.extend(("", ""))
+            self.req = io.BytesIO("\r\n".join(lines).encode())
+            self.req.write(self.body)
+        return self.req.getvalue()
+
+
+
+
+class HTTPResponse:
+    def __init__(self, request, code, headers, body):
+        self.request = request
+        self.code = code
+        self.headers = headers
         self.body = body
 
-        self.headers = {
-            "User-Agent": "python/asynclient",
-            #"User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.29 Safari/537.22",
-            "Connection": "close",
-            "Accept-Encoding": "identity",
-        }
-        self.headers.update(headers)
-
-        request_headers = "\r\n".join(
-            k + ": " + str(v) for k,v in self.headers.items())
-
-        _request = "{} {} HTTP/1.0\r\n{}\r\n\r\n".format(
-            method, path, request_headers).encode()
-        self._request = BytesIO(_request + body)
-
-
-    def _get(self):
-        return self._request.getvalue()
-
-
-    def _set(self, data):
-        self._request.seek(0)
-        self._request.write(data)
 
 
 
-
-class Response:
-    def __init__(self, request, data):
-        self.request = request
-
-        header_data, _, self.body = data.partition(b"\r\n\r\n")
-
-        headers = header_data.decode().split("\r\n")
-
-        self.http, self.status_code, self.status = (
-            headers.pop(0).split(maxsplit=2))
-
-        self.headers = {}
-        for header_line in headers:
-            k, v = header_line.split(": ")
-            if k == "Set-Cookie" and k in self.headers:
-                self.headers[k] += ";" + v
-            self.headers[k] = v
-
-        if self.headers.get("Transfer-Encoding", "") == "chunked":
-            self.body = self._chunked_handle(self.body)
+class HTTPConnection:
+    def __init__(self, url):
+        self.url = url
+        self.max_redirects = 5
 
 
-    def _chunked_handle(self, data):
-        """decode chunked data"""
-        data_buffer = BytesIO()
-        while data:
-            head, tail = data.split(b"\r\n", maxsplit=1)
+    @co
+    def get_response(self):
+        redirect = 0
+        while redirect < self.max_redirects:
+            self.request = HTTPRequest(self.url)
+            yield from self._connect()
+            yield from self._send_request()
+            resp = yield from self._get_response()
 
-            index = head.find(b"(")
-            if index != -1:
-                head = int(head[:index], 16)
+            if 200 <= resp.code < 300:
+                return resp
+            elif 300 <= resp.code < 400:
+                self.url = resp.headers.get("location")
             else:
-                head = int(head, 16)
+                raise Exception("status code '{}'".format(resp.code))
 
-            data_buffer.write(tail[:head])
-            data = tail[head + 2:]
-        return data_buffer.getvalue()
+            redirect+=1
+        else:
+            raise Exception("redirect")
 
 
-    def redirection(self, redirection):
-        """redirect or not"""
-        if redirection and "300" <= self.status_code < "400":
-            url = self.headers.get("Location", "")
-            if url:
-                return {
-                    "method": self.request.method,
-                    "url": url,
-                    "body": self.request.body,
-                    "headers": self.request.headers,
-                    "redirection": redirection - 1,
-                }
-        return False
+    @co
+    def _connect(self):
+        self.reader, self.writer = yield from asyncio.open_connection(
+            self.request.netloc, self.request.port)
+
+
+    @co
+    def _send_request(self):
+        self.writer.write(self.request.request)
+        yield from self.writer.drain()
+
+
+    @co
+    def _get_response(self):
+        r = self.reader
+
+        @co
+        def getline():
+            return (yield from r.readline()).decode().rstrip()
+
+        status_line = yield from getline()
+        status_parts = status_line.split(None, 2)
+        if len(status_parts) != 3 or not status_parts[1].isdigit():
+            raise Exception(status_line)
+        http_version, status, reason = status_parts
+        status = int(status)
+
+        headers = {}
+        while True:
+            header_line = yield from getline()
+            if not header_line:
+                break
+            key, value = header_line.split(":", 1)
+            headers[key.lower()] = value.lstrip()
+
+        if "content-length" in headers:
+            nbytes = int(headers["content-length"])
+            body = yield from r.read(nbytes)
+        elif headers.get("transfer-encoding", "") == "chunked":
+            body = yield from self._chunked_handler()
+        else:
+            body = yield from r.read()
+
+        return HTTPResponse(self.request, status, headers, body)
+
+
+    @co
+    def _chunked_handler(self):
+        r = self.reader
+        body = io.BytesIO()
+        while True:
+            size_header = yield from r.readline()
+            parts = size_header.split(b";")
+            size = int(parts[0], 16)
+            if not size:
+                break
+            else:
+                block = yield from r.readexactly(size)
+                assert len(block) == size, (len(block), size)
+                body.write(block)
+            crlf = yield from r.readline()
+            assert crlf == b'\r\n', repr(crlf)
+        return body.getvalue()
+
+
+
+
+@co
+def fetch(url):
+    conn = HTTPConnection(url)
+    data = yield from conn.get_response()
+    return data
+
+
+
+
+if __name__ == '__main__':
+    @co
+    def get(url):
+        data = yield from fetch(url)
+        print(data.body)
+
+    run(get("google.com"))
