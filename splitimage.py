@@ -1,62 +1,83 @@
-#!/usr/bin/env python3.3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3.4
 
-# 用来重命名的 shell 命令，uuid 是 32 位的
 # $ for i in *; do mv $i ${i/_????????????????????????????????/}; done
 
-import sys
-from os import listdir
-from os.path import join
-from uuid import uuid4
+__version__ = "0.2.0"
+
+
+
 
 from PIL import Image
+from pathlib import Path
+from uuid import uuid4
+import argparse
+import logging
+
+
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M:%S",
+    format="[%(levelname)s %(asctime)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+
 
 
 class ImageSplit:
     def __init__(self, dir_name):
-        self.dir_name = dir_name
+        self.dir_name = Path(dir_name)
         self.count = 0
-        self.split()
 
 
-    def split(self):
-        for image in sorted(listdir(self.dir_name)):
-            print(">>> split '{}'...".format(image))
-            self.split_image(join(self.dir_name, image))
+    @property
+    def page_name(self):
+        self.count += 1
+        return "%04d_%s.jpeg" % (self.count, uuid4().hex)
 
 
-    def split_image(self, path):
-        image = Image.open(path)
-        if image.format != "JPEG" and image.mode != "RGB":
-            image = image.convert("RGB")
-        filename = join(self.dir_name,
-                        "{:>04}_" + uuid4().hex + ".jpeg")
-        width, height = image.size
-        if width > height:
-            half = int(width / 2)
-            self.count += 1
-            with open(filename.format(self.count), "wb") as f:
-                right = image.crop((half, 0, width, height))
-                right.save(f)
-            self.count += 1
-            with open(filename.format(self.count), "wb") as f:
-                left = image.crop((0, 0, half, height))
-                left.save(f)
-        else:
-            self.count += 1
-            with open(filename.format(self.count), "wb") as f:
-                image.save(f)
+    def start(self):
+        for image in sorted(self.dir_name.iterdir()):
+            self.split_image(image)
+
+
+    def split_image(self, image_path):
+        with image_path.open("rb") as f:
+            image = Image.open(f)
+
+            if image.format != "JPEG" and image.mode != "RBG":
+                image = image.convert("RGB")
+
+            width, height = image.size
+            if width > height:
+                logger.info("[splitting] %s", image_path)
+                half = int(width / 2)
+                with (self.dir_name / self.page_name).open("wb") as f:
+                    right = image.crop((half, 0, width, height))
+                    right.save(f)
+                with (self.dir_name / self.page_name).open("wb") as f:
+                    left = image.crop((0, 0, half, height))
+                    left.save(f)
+            else:
+                logger.info("[not split] %s", image_path)
+                with (self.dir_name / self.page_name).open("wb") as f:
+                    image.save(f)
+
+
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("usage: {} <image_dir>".format(sys.argv[0]))
-        exit()
+    ARGS = argparse.ArgumentParser()
+    ARGS.add_argument("dirs", nargs="+")
+    args = ARGS.parse_args()
 
-    ImageSplit(sys.argv[1])
+    for d in args.dirs:
+        ImageSplit(d).start()
 
 
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
