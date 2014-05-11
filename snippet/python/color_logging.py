@@ -64,6 +64,10 @@ color_dict = {
     "bakwht": "\033[47m", # White
 }
 
+format_list = [
+    "[%(levelname)1.1s %(asctime)s] %(message)s",
+    "%(asctime)s %(levelname)-8s %(message)s",
+]
 
 
 
@@ -81,7 +85,7 @@ def colorful(logger, colors=None):
 
     stderr = sys.stderr
     # decorator
-    def setup_color(log, color):
+    def colored(log, color):
         @wraps(log)
         def wrapped(*args, **kwds):
             stderr.write(color)
@@ -93,7 +97,7 @@ def colorful(logger, colors=None):
     # modify logger
     for level, color in _colors.items():
         log = getattr(logger, level)
-        log = setup_color(log, color)
+        log = colored(log, color)
         setattr(logger, level, log)
 
     return logger
