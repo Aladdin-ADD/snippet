@@ -18,44 +18,83 @@ Uasge:
 
 
 from functools import wraps
-import curses
 import logging
 import sys
 
 
 
 
-curses.setupterm()
+color_dict = {
+    "txtrst": "\033[0m", # Text Reset
 
-fg_color = curses.tigetstr("setaf") or curses.tigetstr("setf") or b""
+    "txtblk": "\033[0;30m", # Black - Regular
+    "txtred": "\033[0;31m", # Red
+    "txtgrn": "\033[0;32m", # Green
+    "txtylw": "\033[0;33m", # Yellow
+    "txtblu": "\033[0;34m", # Blue
+    "txtpur": "\033[0;35m", # Purple
+    "txtcyn": "\033[0;36m", # Cyan
+    "txtwht": "\033[0;37m", # White
 
-DEFAULT_COLORS = {
-    "debug": curses.tparm(fg_color, 4).decode(), # blue
-    "info": curses.tparm(fg_color, 2).decode(), # green
-    "warning": curses.tparm(fg_color, 3).decode(), # yellow
-    "error": curses.tparm(fg_color, 1).decode(), # red
+    "bldblk": "\033[1;30m", # Black - Bold
+    "bldred": "\033[1;31m", # Red
+    "bldgrn": "\033[1;32m", # Green
+    "bldylw": "\033[1;33m", # Yellow
+    "bldblu": "\033[1;34m", # Blue
+    "bldpur": "\033[1;35m", # Purple
+    "bldcyn": "\033[1;36m", # Cyan
+    "bldwht": "\033[1;37m", # White
+
+    "unkblk": "\033[4;30m", # Black - Underline
+    "undred": "\033[4;31m", # Red
+    "undgrn": "\033[4;32m", # Green
+    "undylw": "\033[4;33m", # Yellow
+    "undblu": "\033[4;34m", # Blue
+    "undpur": "\033[4;35m", # Purple
+    "undcyn": "\033[4;36m", # Cyan
+    "undwht": "\033[4;37m", # White
+
+    "bakblk": "\033[40m", # Black - Background
+    "bakred": "\033[41m", # Red
+    "bakgrn": "\033[42m", # Green
+    "bakylw": "\033[43m", # Yellow
+    "bakblu": "\033[44m", # Blue
+    "bakpur": "\033[45m", # Purple
+    "bakcyn": "\033[46m", # Cyan
+    "bakwht": "\033[47m", # White
 }
 
-_reset_color = curses.tigetstr("sgr0").decode()
 
 
 
+def colorful(logger, colors=None):
+    # set color
+    _reset = "\033[0m"
+    _colors = {
+        "debug": "\033[0;34m", # blue
+        "info": "\033[0;32m", # green
+        "warning": "\033[0;33m", # yellow
+        "error": "\033[0;31m", # red
+    }
+    if colors is not None:
+        _colors.update(colors)
 
-def colorful(logger, colors=DEFAULT_COLORS):
-    def colored(levelno, color):
-        _log = getattr(logger, levelno)
+    stderr = sys.stderr
+    # decorator
+    def setup_color(log, color):
         @wraps(log)
-        def wrap(*args, **kwds):
-            sys.stderr.write(color)
-            _log(*args, **kwds)
-            sys.stderr.write(_reset_color)
-            sys.stderr.flush()
-        return wrap
+        def wrapped(*args, **kwds):
+            stderr.write(color)
+            log(*args, **kwds)
+            stderr.write(_reset)
+            stderr.flush()
+        return wrapped
 
-
-    for levelno, color in colors.items():
-        fn = colored(levelno, color)
-        setattr(logger, levelno, fn)
+    # modify logger
+    for level, color in _colors.items():
+        log = getattr(logger, level)
+        log = setup_color(log, color)
+        setattr(logger, level, log)
 
     return logger
 
