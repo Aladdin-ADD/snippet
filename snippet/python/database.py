@@ -1,21 +1,23 @@
-#!/usr/bin/env python3.3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3.4
 
-# mysql connector 1.0.10
-# python 3.3.2
-# mariadb 5.5.31
+# python 3.4.0
+# mysql-connector 1.1.6
+# mariadb 5.5.37
+
+__version__ = "0.1.1"
+
 
 import logging
 import mysql.connector
 
 
-version = "0.1"
-version_info = (0, 1, 0, 0)
+logger = logging.getLogger(__name__)
+
 
 
 
 class Connection:
-    """ usage:
+    """ Usage:
     >>> import database
     >>> db = database.Connection("user", "password", "database")
     """
@@ -51,8 +53,9 @@ class Connection:
         try:
             self.reconnect()
         except Exception:
-            logging.error("Cannot connect to MySQL on {}".format(self.host),
-                          exc_info=True)
+            logger.error(
+                "Cannot connect to MySQL on %s" % self.host,
+                exc_info=True)
 
 
     def __del__(self):
@@ -86,7 +89,7 @@ class Connection:
         try:
             return cursor.execute(query, kwparameters or parameters)
         except mysql.connector.OperationalError:
-            logging.error("Error connecting to MySQL on {}".format(self.host))
+            logger.error("Error connecting to MySQL on %s" % self.host)
             self.close()
             raise
 
