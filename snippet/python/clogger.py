@@ -5,16 +5,18 @@
 + https://github.com/goagent/goagent/
 + https://github.com/facebook/tornado
 
-------
-
 Uasge:
-
 >>> import logging
->>> import color_logging
+>>> import clogger
 >>> logger = logging.getLogger(__name__)
->>> logger = color_logging.colorful(logger)
+>>> logger = clogger.colorful(logger)
 >>> logger.info("example")
 """
+
+
+__version__ = "0.1.1"
+
+
 
 
 from functools import wraps
@@ -67,6 +69,7 @@ color_dict = {
 format_list = [
     "[%(levelname)1.1s %(asctime)s] %(message)s",
     "%(asctime)s %(levelname)-8s %(message)s",
+    "%(asctime)s - %(levelname)s - %(message)s",
 ]
 
 
@@ -106,7 +109,11 @@ def colorful(logger, colors=None):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.NOTSET)
+    logging.basicConfig(
+        level=logging.NOTSET,
+        datefmt="%m-%d %H:%M:%S",
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
     logger = logging.getLogger(__name__)
     logger = colorful(logger)
 
