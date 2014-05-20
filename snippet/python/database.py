@@ -4,7 +4,8 @@
 # mysql-connector 1.1.6
 # mariadb 5.5.37
 
-__version__ = "0.1.1"
+
+__version__ = "0.2.0"
 
 
 import logging
@@ -85,39 +86,19 @@ class Connection:
         return self._db.cursor()
 
 
-    def _execute(self, cursor, query, parameters, kwparameters):
-        try:
-            return cursor.execute(query, kwparameters or parameters)
-        except mysql.connector.OperationalError:
-            logger.error("Error connecting to MySQL on %s" % self.host)
-            self.close()
-            raise
-
-
-    def iter(self, query, *parameters, **kwparameters):
-        """Returns an iterator for the given query and parameters."""
+    def query(self, sql, *parameters, **kwparameters):
         cursor = self._cursor()
         try:
-            self._execute(cursor, query, parameters, kwparameters)
-            for row in cursor:
-                yield Row(zip(cursor.column_names, row))
+            cursor.execute(sql, kwparameters or parameters)
+            column_names = cursor.column_names
+            return [Row(zip(column_names, row)) for row in cursor]
         finally:
             cursor.close()
 
 
-    def query(self, query, *parameters, **kwparameters):
-        """Returns a row list for the given query and parameters."""
-        cursor = self._cursor()
-        try:
-            self._execute(cursor, query, parameters, kwparameters)
-            return [Row(zip(cursor.column_names, row)) for row in cursor]
-        finally:
-            cursor.close()
-
-
-    def get(self, query, *parameters, **kwparameters):
+    def get(self, sql, *parameters, **kwparameters):
         """Returns the first row returned for the given query."""
-        rows = self.query(query, *parameters, **kwparameters)
+        rows = self.query(sql, *parameters, **kwparameters)
         if not rows:
             return None
         elif len(rows) > 1:
@@ -126,19 +107,53 @@ class Connection:
             return rows[0]
 
 
-    def execute(self, query, *parameters, **kwparameters):
+    def execute(self, sql, *parameters, **kwparameters):
+        """Executes the given query, returning the rowcount from the query."""
+        return self.execute_rowcount(sql, *parameters, **kwparameters)
+
+
+    def execute_lastrowid(self, sql, *parameters, **kwparameters):
+        """Executes the given query, returning the lastrowid from the query."""
+        cursor = self._cursor()
+        try:
+            self._execute(cursor, sql, parameters, kwparameters)
+            return cursor.lastrowid
+        finally:
+            cursor.close()
+
+
+    def execute_rowcount(self, sql, *parameters, **kwparameters):
         """Executes the given query, returning the rowcount from the query."""
         cursor = self._cursor()
         try:
-            self._execute(cursor, query, parameters, kwparameters)
+            self._execute(cursor, sql, parameters, kwparameters)
             return cursor.rowcount
         finally:
             cursor.close()
 
 
-    def executemany(self, query, parameters):
+    def executemany(self, sql, parameters):
         """Executes the given query against all the given param sequences.
         return the rowcount from the query.
+        """
+        return self.executemany_rowcount(sql, parameters)
+
+
+    def executemany_lastrowid(self, sql, parameters):
+        """Executes the given query against all the given param sequences.
+        We return the lastrowid from the query.
+        """
+        cursor = self._cursor()
+        try:
+            cursor.executemany(sql, parameters)
+            return cursor.lastrowid
+        finally:
+            cursor.close()
+
+
+    def executemany_rowcount(self, query, parameters):
+        """Executes the given query against all the given param sequences.
+        We return the rowcount from the query.
         """
         cursor = self._cursor()
         try:
@@ -146,6 +161,13 @@ class Connection:
             return cursor.rowcount
         finally:
             cursor.close()
+
+
+    update = execute_rowcount
+    updatemany = executemany_rowcount
+
+    insert = execute_lastrowid
+    insertmany = executemany_lastrowid
 
 
 
