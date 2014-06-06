@@ -1,15 +1,10 @@
 #!/usr/bin/env python3.4
 
-# $ for i in *; do mv $i ${i/_????????????????????????????????/}; done
-
-__version__ = "0.2.0"
-
-
+__version__ = "0.2.1"
 
 
 from PIL import Image
 from pathlib import Path
-from uuid import uuid4
 import argparse
 import logging
 
@@ -35,7 +30,7 @@ class ImageSplit:
     @property
     def page_name(self):
         self.count += 1
-        return "%04d_%s.jpeg" % (self.count, uuid4().hex)
+        return "_%04d.jpeg" % self.count
 
 
     def start(self):
