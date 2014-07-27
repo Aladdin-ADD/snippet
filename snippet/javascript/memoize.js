@@ -3,34 +3,35 @@
 (function() {
     "use strict";
 
-    function hashArguments(args) {
+    function defaultResolver(args) {
         var key = "";
-        var i = args.length;
-        var currentArg = null;
-        while (i--) {
-            currentArg = args[i];
+        var len = args.length;
+        var currentArg;
+        while (len--) {
+            currentArg = args[len];
             key += (currentArg === Object(currentArg)) ?
                 JSON.stringify(currentArg) : currentArg;
         }
         return key;
     }
 
-    function memoize(fn, hashFunction) {
-        var hash = (typeof(hashFunction) == "function") ?
-            hashFunction : hashArguments;
+    function memoize(fn, resolver) {
+        var _slice = Array.prototype.slice;
 
-        function wrapper() {
-            var key = hash(Array.prototype.slice.call(arguments));
-            return (key in wrapper.memoized) ?
-                wrapper.memoized[key] :
-                wrapper.memoized[key] = fn.apply(this, arguments);
+        var _resolver = (typeof resolver === "function") ?
+            resolver : defaultResolver;
+
+        function memoized() {
+            var key = _resolver(_slice.call(arguments));
+            return (key in memoized.cache) ?
+                memoized.cache[key] :
+                (memoized.cache[key] = fn.apply(this, arguments));
         }
 
-        wrapper.memoized = {};
+        memoized.cache = {};
 
-        return wrapper;
+        return memoized;
     }
 
-    var win = (0, eval)("this");
-    win.memoize = memoize;
+    window.memoize = memoize;
 })();
