@@ -8,16 +8,16 @@
         // constructor of subclass
         var _constructor = function Class() {
             // if `init` method existed, apply to new object
-            // this pointer to new instance
-            if (typeof(this.init) == "function")
-                this.init.apply(this, arguments);
+            // `this` pointer to new instance
+            if (typeof(props.init) == "function")
+                props.init.apply(this, arguments);
         };
 
         // add `extend` method to constructor
         _constructor.extend = extendClass;
 
         // prototype of subclass
-        // this pointer to superclass
+        // `this` pointer to superclass
         // _prototype.__proto__ === superclass.prototype
         // _prototype.superclass === superclass.prototype
         var _prototype = Object.create(this.prototype);
@@ -77,7 +77,7 @@ function example() {
 
         var Cat = Animal.extend({
             init: function(name, age) {
-                this.superclass.init(name);
+                this.superclass.init.call(this, name);
                 this.age = age;
             },
             type: "cat"
