@@ -18,8 +18,14 @@
 }
 
 
-@mixin ellopsis() {
+@mixin ellipsis() {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+}
+
+
+@mixin box-sizing() {
+    box-sizing: border-box;
+    *behavior: url(boxsizing.htc);
 }
