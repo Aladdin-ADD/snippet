@@ -14,8 +14,12 @@
 
     var readyCallback = function() {
         if (win.removeEventListener) {
+            doc.removeEventListener("DOMContentLoaded", readyCallback);
             win.removeEventListener("load", readyCallback);
         } else {
+            // ie8
+            if (!/complete|interactive/.test(doc.readyState)) return;
+            doc.detachEvent("onreadystatechange", readyCallback);
             win.detachEvent("onload", readyCallback);
         }
         isReady = true;
@@ -25,23 +29,17 @@
     };
 
     (function() {
-        if (doc.readyState === "complete") {
+        // load | DOMContentLoaded
+        if (/complete|interactive/.test(doc.readyState)) {
+            // do not block
             setTimeout(readyCallback);
         } else {
             if (doc.addEventListener) {
-                doc.addEventListener("DOMContentLoaded", function loader() {
-                    doc.removeEventListener("DOMContentLoaded", loader);
-                    readyCallback();
-                });
-                win.addEventListener("load", readyCallback);
+                doc.addEventListener("DOMContentLoaded", readyCallback);
+                win.addEventListener("load", readyCallback); // fallback for DOMContentLoaded
             } else {
                 // ie8
-                doc.attachEvent("onreadystatechange", function loader() {
-                    if (doc.readyState === "complete") {
-                        doc.detachEvent("onreadystatechange", loader);
-                        readyCallback();
-                    }
-                });
+                doc.attachEvent("onreadystatechange", readyCallback);
                 win.attachEvent("onload", readyCallback);
 
                 // ie67
