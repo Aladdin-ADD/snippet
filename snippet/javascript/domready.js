@@ -5,6 +5,80 @@
 // https://github.com/jquery/jquery/blob/1.x-master/src/core/ready.js
 
 (function() {
+    var win = window;
+    var doc = document;
+    var fns = [];
+    var isReady = false;
+
+    var readyCallback = function() {
+        doc.removeEventListener("DOMContentLoaded", readyCallback);
+        win.removeEventListener("load", readyCallback);
+        isReady = true;
+        for (var i = 0, len = fns.length; i < len; ++i) {
+            fns[i]();
+        }
+    };
+
+    (function() {
+        // load | DOMContentLoaded
+        if (/complete|interactive/.test(doc.readyState)) {
+            setTimeout(readyCallback); // do not block
+        } else {
+            doc.addEventListener("DOMContentLoaded", readyCallback);
+            win.addEventListener("load", readyCallback); // fallback for DOMContentLoaded
+        }
+    })();
+
+    var domready = function(fn) {
+        isReady ? fn() : fns.push(fn);
+    };
+
+    if (typeof exports === "object") {
+        module.exports = domready;
+    } else {
+        win.domready = domready;
+    }
+})();
+
+
+/*
+var readyCallback = function() {
+    // ie8
+    if (!/complete|interactive/.test(doc.readyState)) return;
+    doc.detachEvent("onreadystatechange", readyCallback);
+    win.detachEvent("onload", readyCallback);
+    isReady = true;
+};
+(function() {
+    // ie8
+    doc.attachEvent("onreadystatechange", readyCallback);
+    win.attachEvent("onload", readyCallback);
+
+    // ie67
+    var top = false;
+    try { top = win.frameElement === null; } catch(e) {}
+    if (doc.documentElement.doScroll && top) {
+        var doScroll = doc.documentElement.doScroll;
+        (function poll() {
+            try {
+                doScroll("left");
+            } catch(e) {
+                setTimeout(poll, 1);
+                return;
+            }
+            readyCallback();
+        })();
+    }
+})();
+*/
+
+
+
+
+
+
+
+(function() {
     "use strict";
 
     var win = window;
@@ -12,21 +86,6 @@
     var fns = [];
     var isReady = false;
 
-    var readyCallback = function() {
-        if (win.removeEventListener) {
-            doc.removeEventListener("DOMContentLoaded", readyCallback);
-            win.removeEventListener("load", readyCallback);
-        } else {
-            // ie8
-            if (!/complete|interactive/.test(doc.readyState)) return;
-            doc.detachEvent("onreadystatechange", readyCallback);
-            win.detachEvent("onload", readyCallback);
-        }
-        isReady = true;
-        for (var i = 0, len = fns.length; i < len; ++i) {
-            fns[i]();
-        }
-    };
 
     (function() {
         // load | DOMContentLoaded
@@ -38,27 +97,6 @@
                 doc.addEventListener("DOMContentLoaded", readyCallback);
                 win.addEventListener("load", readyCallback); // fallback for DOMContentLoaded
             } else {
-                // ie8
-                doc.attachEvent("onreadystatechange", readyCallback);
-                win.attachEvent("onload", readyCallback);
-
-                // ie67
-                var top = false;
-                try {
-                    top = win.frameElement === null;
-                } catch(e) {}
-                if (doc.documentElement.doScroll && top) {
-                    var doScroll = doc.documentElement.doScroll;
-                    (function poll() {
-                        try {
-                            doScroll("left");
-                        } catch(e) {
-                            setTimeout(poll, 1);
-                            return;
-                        }
-                        readyCallback();
-                    })();
-                }
             }
         }
     })();
