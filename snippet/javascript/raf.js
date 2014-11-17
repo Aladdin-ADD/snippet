@@ -6,8 +6,8 @@
     var w = window;
 
     // polyfill for requestAnimationFrame
-    var raf = w.requestAnimationFrame || w.webkitRequestAnimationFrame;
-    var caf = w.cancelAnimationFrame || w.webkitRequestAnimationFrame;
+    var raf = w.requestAnimationFrame;
+    var caf = w.cancelAnimationFrame;
     if (!raf || !caf) {
         var lastTime = 0;
         raf = function(callback) {
