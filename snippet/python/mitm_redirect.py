@@ -1,7 +1,7 @@
 import re
 
 redirect = [
-    ("http://from/(.*)", "http://to/\\1"),
+    (r"http://from/(.*)", r"http://to/\1"),
 ]
 
 r = [(re.compile(_from), _to) for (_from, _to) in redirect]
