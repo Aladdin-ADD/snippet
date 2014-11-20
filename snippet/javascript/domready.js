@@ -20,8 +20,7 @@
     };
 
     (function() {
-        // load | DOMContentLoaded
-        if (/complete|interactive/.test(doc.readyState)) {
+        if (doc.readyState === "complete") {
             setTimeout(readyCallback); // do not block
         } else {
             doc.addEventListener("DOMContentLoaded", readyCallback);
@@ -44,7 +43,7 @@
 /*
 var readyCallback = function() {
     // ie8
-    if (!/complete|interactive/.test(doc.readyState)) return;
+    if (doc.readyState !== "complete") return;
     doc.detachEvent("onreadystatechange", readyCallback);
     win.detachEvent("onload", readyCallback);
     isReady = true;
@@ -71,43 +70,3 @@ var readyCallback = function() {
     }
 })();
 */
-
-
-
-
-
-
-
-(function() {
-    "use strict";
-
-    var win = window;
-    var doc = document;
-    var fns = [];
-    var isReady = false;
-
-
-    (function() {
-        // load | DOMContentLoaded
-        if (/complete|interactive/.test(doc.readyState)) {
-            // do not block
-            setTimeout(readyCallback);
-        } else {
-            if (doc.addEventListener) {
-                doc.addEventListener("DOMContentLoaded", readyCallback);
-                win.addEventListener("load", readyCallback); // fallback for DOMContentLoaded
-            } else {
-            }
-        }
-    })();
-
-    var domready = function(fn) {
-        isReady ? fn() : fns.push(fn);
-    };
-
-    if (typeof exports === "object") {
-        module.exports = domready;
-    } else {
-        win.domready = domready;
-    }
-})();
