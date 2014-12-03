@@ -3,8 +3,8 @@
 
     var doc = document, E = encodeURIComponent, D = decodeURIComponent;
 
-    var Cookies = {};
-    Cookies.get = function(key) {
+    var cookies = {};
+    cookies.get = function(key) {
         if (!key) return;
         var ekey = E(key);
         var pairs = doc.cookie.split(/;\s*/);
@@ -16,7 +16,7 @@
             }
         }
     };
-    Cookies.set = function(key, value, options) {
+    cookies.set = function(key, value, options) {
         if (!key) return;
         var pair = [E(key) + "=" + E(value)];
         if (options) {
@@ -33,18 +33,17 @@
         var cookie = pair.join("; ");
         doc.cookie = cookie;
     };
-    Cookies.del = function(key, options) {
+    cookies.del = function(key, options) {
         if (!key) return;
         options = options || {};
         options.expires = "Thu, 01 Jan 1970 00:00:00 GMT";
-        Cookies.set(key, "", options);
+        cookies.set(key, "", options);
     };
 
 
     if (typeof exports === "object") {
-        module.exports = Cookies;
+        module.exports = cookies;
     } else {
-        var w = (0, eval)("this");
-        w.Cookies = Cookies;
+        window.cookies = cookies;
     }
 })();
