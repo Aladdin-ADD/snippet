@@ -1,22 +1,24 @@
 /**
- * format(2014-12-03 18:06:56)
+ * http://www.w3.org/TR/NOTE-datetime
  *
- * yyyy = 2014
+ * 2014-12-03 18:06:56
  *
- * m = 12
- * mm = 12
+ * YYYY = 2014
  *
- * d = 3
- * dd = 03
+ * M = 12
+ * MM = 12
  *
- * H = 18
- * HH = 18
+ * D = 3
+ * DD = 03
  *
- * M = 6
- * MM = 06
+ * h = 18
+ * hh = 18
  *
- * S = 56
- * SS = 56
+ * m = 6
+ * mm = 06
+ *
+ * s = 56
+ * ss = 56
  *
  */
 
@@ -40,21 +42,21 @@
 
         // generate number
         var pairs = {
-            yyyy: _year,
-            m: _month,
-            mm: pad(_month),
-            d: _date,
-            dd: pad(_date),
-            H: _hour,
-            HH: pad(_hour),
-            M: _minute,
-            MM: pad(_minute),
-            S: _second,
-            SS: pad(_second)
+            YYYY: _year,
+            M: _month,
+            MM: pad(_month),
+            D: _date,
+            DD: pad(_date),
+            h: _hour,
+            hh: pad(_hour),
+            m: _minute,
+            mm: pad(_minute),
+            s: _second,
+            ss: pad(_second)
         };
 
         // format date
-        return format.replace(/yyyy|mm?|dd?|HH?|MM?|SS?/g, function(matched) {
+        return format.replace(/YYYY|MM?|DD?|hh?|mm?|ss?/g, function(matched) {
             return pairs[matched];
         });
     };
