@@ -1,0 +1,23 @@
+.spin {
+    content: "";
+    display: inline-block;
+    margin: 0 15px 4px;
+    padding: 0;
+    border: 0;
+    background: 0;
+    width: 3px;
+    height: 3px;
+    border-radius: 100%;
+    box-shadow: 0 -10px 0 .9px #666,10px 0 #999,0 10px #999,-10px 0 #999,-7px -7px 0 .4px #999,7px -7px 0 1.1px #666,7px 7px #999,-7px 7px #999;
+    transform: rotate(360deg);
+    animation: spin 1.5s linear infinite
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg)
+    }
+    to {
+        transform: rotate(360deg)
+    }
+}
