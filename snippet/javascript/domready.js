@@ -4,40 +4,34 @@
 //
 // https://github.com/jquery/jquery/blob/1.x-master/src/core/ready.js
 
+var win = window;
+var doc = document;
+var fns = [];
+var isReady = false;
+
+var readyCallback = function() {
+    doc.removeEventListener('DOMContentLoaded', readyCallback);
+    win.removeEventListener('load', readyCallback);
+    isReady = true;
+    for (var i = 0, len = fns.length; i < len; ++i) {
+        fns[i]();
+    }
+};
+
 (function() {
-    var win = window;
-    var doc = document;
-    var fns = [];
-    var isReady = false;
-
-    var readyCallback = function() {
-        doc.removeEventListener("DOMContentLoaded", readyCallback);
-        win.removeEventListener("load", readyCallback);
-        isReady = true;
-        for (var i = 0, len = fns.length; i < len; ++i) {
-            fns[i]();
-        }
-    };
-
-    (function() {
-        if (doc.readyState === "complete") {
-            setTimeout(readyCallback); // do not block
-        } else {
-            doc.addEventListener("DOMContentLoaded", readyCallback);
-            win.addEventListener("load", readyCallback); // fallback for DOMContentLoaded
-        }
-    })();
-
-    var domready = function(fn) {
-        isReady ? fn() : fns.push(fn);
-    };
-
-    if (typeof exports === "object") {
-        module.exports = domready;
+    if (doc.readyState === 'complete') {
+        setTimeout(readyCallback); // do not block
     } else {
-        win.domready = domready;
+        doc.addEventListener('DOMContentLoaded', readyCallback);
+        win.addEventListener('load', readyCallback); // fallback for DOMContentLoaded
     }
 })();
+
+var domready = function(fn) {
+    isReady ? fn() : fns.push(fn); // eslint-disable-line no-unused-expressions
+};
+
+module.exports = domready;
 
 
 /*

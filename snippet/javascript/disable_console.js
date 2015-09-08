@@ -2,13 +2,15 @@
 // http://www.hydrantlabs.org/Security/Google/Chrome/
 // work on chrome
 
-(function() {
-    "use strict";
+'use strict';
 
-    Object.defineProperty(console, "_commandLineAPI", {
+var disableConsole = function() {
+    Object.defineProperty(console, '_commandLineAPI', {
         get: function() {
-            throw "console is disabled";
+            throw new Error('console is disabled');
         },
         set: function(val) {}
     });
-})();
+};
+
+module.exports = disableConsole;

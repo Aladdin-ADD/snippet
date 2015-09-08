@@ -5,3 +5,5 @@ var unique = function(arr) {
         return (array.indexOf(value) === index);
     });
 };
+
+module.export = unique;

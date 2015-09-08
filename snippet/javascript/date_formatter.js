@@ -22,48 +22,42 @@
  *
  */
 
-(function() {
-    "use strict";
+'use strict';
 
-    var pad = function(value) {
-        return ("0" + value).substr(-2);
+var pad = function(value) {
+    return ('0' + value).substr(-2);
+};
+
+var dateFormatter = function(date, format) {
+    // get date
+    date = (typeof date === 'number') ? new Date(date) : date;
+
+    var _year = date.getFullYear();
+    var _month = date.getMonth() + 1;
+    var _date = date.getDate();
+    var _hour = date.getHours();
+    var _minute = date.getMinutes();
+    var _second = date.getSeconds();
+
+    // generate number
+    var pairs = {
+        YYYY: _year,
+        M: _month,
+        MM: pad(_month),
+        D: _date,
+        DD: pad(_date),
+        h: _hour,
+        hh: pad(_hour),
+        m: _minute,
+        mm: pad(_minute),
+        s: _second,
+        ss: pad(_second)
     };
 
-    var dateFormatter = function(date, format) {
-        // get date
-        date = (typeof(date) === "number" ? new Date(date) : date);
+    // format date
+    return format.replace(/YYYY|MM?|DD?|hh?|mm?|ss?/g, function(matched) {
+        return pairs[matched];
+    });
+};
 
-        var _year = date.getFullYear(),
-            _month = date.getMonth() + 1,
-            _date = date.getDate(),
-            _hour = date.getHours(),
-            _minute = date.getMinutes(),
-            _second = date.getSeconds();
-
-        // generate number
-        var pairs = {
-            YYYY: _year,
-            M: _month,
-            MM: pad(_month),
-            D: _date,
-            DD: pad(_date),
-            h: _hour,
-            hh: pad(_hour),
-            m: _minute,
-            mm: pad(_minute),
-            s: _second,
-            ss: pad(_second)
-        };
-
-        // format date
-        return format.replace(/YYYY|MM?|DD?|hh?|mm?|ss?/g, function(matched) {
-            return pairs[matched];
-        });
-    };
-
-    if (typeof exports === "object") {
-        module.exports = dateFormatter;
-    } else {
-        window.dateFormatter = dateFormatter;
-    }
-})();
+module.exports = dateFormatter;

@@ -1,5 +1,7 @@
 // https://github.com/Raynos/xtend/blob/master/immutable.js
 
+'use strict';
+
 function extend() {
     var target = {};
 
@@ -15,3 +17,5 @@ function extend() {
 
     return target;
 }
+
+module.exports = extend;
