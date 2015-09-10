@@ -5,14 +5,13 @@
 /**
  * @param {String} a
  * @param {String} b
- * @param {Number} dotCount major.minor.patch is 3 dot
  * @return {Number} -1 is <, 0 is =, 1 is >
  */
-var compare = function(a, b, dotCount) {
-    dotCount = dotCount || 4;
+var compare = function(a, b) {
     var pa = String(a).split('.');
     var pb = String(b).split('.');
-    for (var i = 0; i < dotCount; i++) {
+    var len = Math.min(pa.length, pb.length) + 1;
+    for (var i = 0; i < len; ++i) {
         var na = Number(pa[i]);
         var nb = Number(pb[i]);
         if (na > nb) {
