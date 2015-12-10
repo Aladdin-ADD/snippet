@@ -9,48 +9,57 @@ var source = require('vinyl-source-buffer');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var babelify = require('babelify');
+var envify = require('envify');
+var unreachable = require('unreachable-branch-transform');
+var collapser = require('bundle-collapser/plugin');
 
 var vendors = ['...'];
-
 gulp.task('js', function() {
-    var vendorsBundle = browserify();
-    vendors.map(function(v) {
-        vendorsBundle.require(v);
-    });
-    vendorsBundle
-        .bundle()
-        .pipe(source('vendors.js'))
-        .pipe(gulp.dest('/path/to/dst'));
-
-    var build = function(input, output) {
-        var b = browserify({
-            entries: input,
-            cache: {},
-            packageCache: {},
-            debug: true
-        })
-            .external(vendors)
+    var build = function(name, src, dst) {
+        src = src
             .transform(babelify.configure({
                 'presets': ['es2015']
             }))
+            .transform(envify)
+            .transform(unreachable)
+            .plugin(collapser)
             .plugin(watchify);
 
-        b.on('error', function(err) {
-            console.error('Error: ' + err.message);
-        });
         var bundle = function() {
-            b.bundle()
-                .pipe(source(output))
-                .pipe(gulp.dest('/path/to/dst'));
+            src.bundle()
+                .pipe(source(name))
+                .pipe(gulp.dest(dst));
         };
-        b.on('update', bundle);
+        src.on('update', bundle);
+        src.on('error', function(err) { console.log('Error: ' + err.message); });
         bundle();
     };
-    return gulp.src('/path/to/src', {read: false})
+    var _bCache = {};
+    var _bPackageCache = {};
+
+    // vendors
+    var vendorsBundle = browserify({
+        entries: './widgets/base/base.js',
+        cache: _bCache,
+        packageCache: _bPackageCache
+    });
+    vendors.map(function(v) {
+        vendorsBundle.require(v);
+    });
+    build('vendors.js', vendorsBundle, '/path/to/dst');
+
+    // entries
+    return gulp.src('path/to/src', {read: false})
         .pipe(mapStream(function(file, cb) {
             var input = path.relative(file.cwd, file.path);
             var output = path.relative(file.base, file.path);
-            build(input, output);
+            var b = browserify({
+                entries: input,
+                cache: _bCache,
+                packageCache: _bPackageCache,
+                paths: ['widgets/'],
+                debug: true
+            }).external(vendors);
+            build(output, b, '/path/to/dst');
         }));
 });
-
