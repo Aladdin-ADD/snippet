@@ -37,17 +37,17 @@
             var params = $$checkbox.filter(function($checkbox) {
                 return $checkbox.checked;
             }).map(function($checkbox) {
-                return [$checkbox.value];
+                return {
+                    jsonrpc: '2.0',
+                    id: String(Date.now()),
+                    method: 'aria2.addUri',
+                    params: [[$checkbox.value]]
+                };
             });
             if (params.length === 0) return;
 
             var url = 'http://localhost:6800/jsonrpc';
-            var data = JSON.stringify({
-                jsonrpc: '2.0',
-                id: String(Date.now()),
-                method: 'aria2.addUri',
-                params: params
-            });
+            var data = JSON.stringify(params);
 
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
