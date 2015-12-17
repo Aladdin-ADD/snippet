@@ -1,0 +1,12 @@
+// http://stackoverflow.com/questions/2610497/change-an-inputs-html5-placeholder-color-with-css
+// http://stackoverflow.com/questions/17047694/add-line-break-to-before-or-after-pseudo-element-content
+
+// multiline placeholder
+.textarea {
+    &::-webkit-input-placeholder {
+        &:after {
+            display: block;
+            content: "~~~ \A ~~~";
+        }
+    }
+}
