@@ -27,11 +27,13 @@ gulp.task('js', function() {
 
         var bundle = function() {
             src.bundle()
-                .pipe(source(name))
+                .on('error', function(err) {
+                    console.log('Error: ' + err.message);
+                });
+            .pipe(source(name))
                 .pipe(gulp.dest(dst));
         };
         src.on('update', bundle);
-        src.on('error', function(err) { console.log('Error: ' + err.message); });
         bundle();
     };
     var _bCache = {};
@@ -39,7 +41,7 @@ gulp.task('js', function() {
 
     // vendors
     var vendorsBundle = browserify({
-        entries: './widgets/base/base.js',
+        entries: 'vendor.js',
         cache: _bCache,
         packageCache: _bPackageCache
     });
@@ -49,7 +51,9 @@ gulp.task('js', function() {
     build('vendors.js', vendorsBundle, '/path/to/dst');
 
     // entries
-    return gulp.src('path/to/src', {read: false})
+    return gulp.src('path/to/src', {
+            read: false
+        })
         .pipe(mapStream(function(file, cb) {
             var input = path.relative(file.cwd, file.path);
             var output = path.relative(file.base, file.path);
@@ -57,7 +61,7 @@ gulp.task('js', function() {
                 entries: input,
                 cache: _bCache,
                 packageCache: _bPackageCache,
-                paths: ['widgets/'],
+                paths: ['require/path'],
                 debug: true
             }).external(vendors);
             build(output, b, '/path/to/dst');
