@@ -29,8 +29,8 @@ gulp.task('js', function() {
             src.bundle()
                 .on('error', function(err) {
                     console.log('Error: ' + err.message);
-                });
-            .pipe(source(name))
+                })
+                .pipe(source(name))
                 .pipe(gulp.dest(dst));
         };
         src.on('update', bundle);
@@ -51,9 +51,7 @@ gulp.task('js', function() {
     build('vendors.js', vendorsBundle, '/path/to/dst');
 
     // entries
-    return gulp.src('path/to/src', {
-            read: false
-        })
+    return gulp.src('path/to/src', { read: false })
         .pipe(mapStream(function(file, cb) {
             var input = path.relative(file.cwd, file.path);
             var output = path.relative(file.base, file.path);
