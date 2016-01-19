@@ -1,4 +1,7 @@
+# https://github.com/mitmproxy/mitmproxy/blob/master/examples/redirect_requests.py
+
 import re
+from urllib.parse import urlparse
 
 redirect = [
     (r"http://from/(.*)", r"http://to/\1"),
@@ -17,4 +20,5 @@ def request(ctx, flow):
             new_url = match.expand(_to)
             print("\nREDIRECT '%s'\nTO\t '%s'\n" % (old_url, new_url))
             req.url = new_url
+            req.host = urlparse(new_url).netloc
             return
