@@ -1,7 +1,7 @@
 # https://github.com/mitmproxy/mitmproxy/blob/master/examples/redirect_requests.py
 
 import re
-from urllib.parse import urlparse
+from urlparse import urlparse
 
 redirect = [
     (r"http://from/(.*)", r"http://to/\1"),
