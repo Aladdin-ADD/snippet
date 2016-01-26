@@ -1,0 +1,71 @@
+/**
+ * https://github.com/10up/sanitize.css/blob/master/sanitize.scss
+ * https://github.com/necolas/normalize.css/blob/master/normalize.css
+ * https://github.com/twbs/bootstrap/blob/v4-dev/scss/_reboot.scss
+ * https://github.com/suitcss/base/blob/master/lib/base.css
+ */
+
+/* global */
+
+*, :before, :after {
+    box-sizing: inherit;
+}
+
+:selection {
+    background-color: #b3d4fc;
+    color: #fff;
+    text-shadow: none;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+html {
+    box-sizing: border-box;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: sans-serif;
+    font-size: 100%;
+    line-height: 1;
+    color: #000;
+    background-color: #fff;
+}
+
+/* element */
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+ul, ol {
+    list-style-position: inside;
+    list-style-type: none;
+}
+button {
+    background: transparent;
+    -webkit-appearance: button;
+}
+input {
+    -webkit-appearance: none;
+}
+textarea {
+    resize: vertical;
+}
+i, em {
+    font-style: normal;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
