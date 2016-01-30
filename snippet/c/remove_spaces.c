@@ -8,7 +8,7 @@ void remove_space(char *s) {
         while (*p == ' ') {
             p++;
         }
-    } while (*s++ = *p++);
+    } while ((*s++ = *p++));
 }
 
 int main(int argc, char const* argv[]) {
