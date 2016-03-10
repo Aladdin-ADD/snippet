@@ -4,13 +4,16 @@ import ProgressBarPlugin from 'progress-bar-webpack-plugin';
 import path from 'path';
 
 export default {
-    context: __dirname,
+    context: path.resolve('./src'),
     entry: {
-        filename: ['source/file']
+        index: ['path/to/index']
     },
     output: {
-        path: path.join(__dirname, 'output/dir'),
+        path: path.resolve('./dist'),
         filename: '[name].js'
+    },
+    resolve: {
+        extensions: ['', '.js', '.css', '.json', '.vue', '.jsx'],
     },
     module: {
         loaders: [{
@@ -47,12 +50,18 @@ export default {
         new HtmlWebpackPlugin({
             filename: 'filename.html',
             chunks: ['entry list']
+        }),
+        new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                warnings: false
+            }
         })
     ],
     devtool: '#inline-source-map',
     debug: true,
     devServer: {
-        //contentBase: 'output/dir',
+        contentBase: path.resolve('./dist'),
+        historyApiFallback: true,
         inline: true,
         hot: true,
         stats: {
