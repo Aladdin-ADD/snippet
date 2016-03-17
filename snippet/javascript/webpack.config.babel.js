@@ -1,21 +1,30 @@
+import path from 'path';
 import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ProgressBarPlugin from 'progress-bar-webpack-plugin';
-import path from 'path';
+import SplitByPathPlugin from 'webpack-split-by-path';
 
-export default {
+var env = process.env.NODE_ENV || 'development';
+
+var config = {
     context: path.resolve('./src'),
     entry: {
         index: ['path/to/index']
     },
     output: {
         path: path.resolve('./dist'),
-        filename: '[name].js'
+        filename: '[name].[chunkhash:8].js',
+        chunkFilename: '[name].[chunkhash:8].js'
     },
     resolve: {
-        extensions: ['', '.js', '.css', '.json', '.vue', '.jsx'],
+        extensions: ['', '.js', '.css', '.json', '.vue', '.jsx']
     },
     module: {
+        preLoaders: [{
+            test: /\.js$/,
+            exclude: /node_modules/,
+            loader: 'eslint'
+        }],
         loaders: [{
             test: /\.vue$/,
             loader: 'vue'
@@ -36,30 +45,64 @@ export default {
         }]
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
-        new webpack.optimize.OccurrenceOrderPlugin(true),
+        new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.AggressiveMergingPlugin(),
-        new webpack.DefinePlugin({
-            'process.env': {
-                'NODE_ENV': JSON.stringify('development')
-            }
-        }),
         new ProgressBarPlugin(),
-        new HtmlWebpackPlugin({
-            filename: 'filename.html',
-            chunks: ['entry list']
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify(env)
         }),
         new webpack.optimize.UglifyJsPlugin({
+            sourceMap: false,
             compress: {
+                pure_getters: true,
+                screw_ie8: true,
+                unsafe: true,
+                unsafe_comps: true,
                 warnings: false
+            },
+            output: {
+                comments: false
+            }
+        }),
+        new SplitByPathPlugin([{
+            name: 'vendor',
+            path: path.resolve('./node_modules')
+        }]),
+        new HtmlWebpackPlugin({
+            filename: 'filename.html',
+            chunks: ['entry list'],
+            minify: {
+                removeComments: true,
+                collapseWhitespace: true,
+                collapseInlineTagWhitespace: true,
+                collapseBooleanAttributes: true,
+                removeTagWhitespace: true,
+                removeRedundantAttributes: true,
+                useShortDoctype: true,
+                caseSensitive: true,
+                minifyJS: true,
+                minifyCSS: true,
+                quoteCharacter: '"'
             }
         })
     ],
-    devtool: '#inline-source-map',
-    debug: true,
-    devServer: {
+    node: {
+        process: false,
+        setImmediate: false
+    },
+    debug: false,
+    bail: true
+};
+
+
+if (env === 'development') {
+    config.debug = true;
+    config.bail = false;
+    config.devtool = '#inline-source-map';
+    config.plugins.push(new webpack.HotModuleReplacementPlugin());
+    config.plugins.push(new webpack.NoErrorsPlugin());
+    config.devServer = {
         contentBase: path.resolve('./dist'),
         historyApiFallback: true,
         inline: true,
@@ -67,10 +110,9 @@ export default {
         stats: {
             chunks: false
         }
-    },
-    node: {
-        process: false,
-        setImmediate: false
-    },
-    bail: true
-};
+    };
+    config.module.preLoaders = undefined;
+}
+
+export
+default config;
