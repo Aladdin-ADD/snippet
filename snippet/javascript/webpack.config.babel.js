@@ -3,14 +3,21 @@ import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ProgressBarPlugin from 'progress-bar-webpack-plugin';
 import SplitByPathPlugin from 'webpack-split-by-path';
+import glob from 'glob';
 
 var env = process.env.NODE_ENV || 'development';
 
+var entries = glob.sync('./src/**/*.js').reduce(function(coll, file) {
+    coll[file.slice(6, -3)] = [file];
+    return coll;
+}, {});
+
 var config = {
     context: path.resolve('./src'),
-    entry: {
-        index: ['path/to/index']
-    },
+    //entry: {
+        //index: ['path/to/index']
+    //},
+    entry: entries,
     output: {
         path: path.resolve('./dist'),
         filename: '[name].[chunkhash:8].js',
@@ -75,9 +82,9 @@ var config = {
             minify: {
                 removeComments: true,
                 collapseWhitespace: true,
+                preserveLineBreaks: true,
                 collapseInlineTagWhitespace: true,
                 collapseBooleanAttributes: true,
-                removeTagWhitespace: true,
                 removeRedundantAttributes: true,
                 useShortDoctype: true,
                 caseSensitive: true,
@@ -100,8 +107,10 @@ if (env === 'development') {
     config.debug = true;
     config.bail = false;
     config.devtool = '#inline-source-map';
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
-    config.plugins.push(new webpack.NoErrorsPlugin());
+    config.plugins = config.plugins.concat([
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoErrorsPlugin()
+    ]);
     config.devServer = {
         contentBase: path.resolve('./dist'),
         historyApiFallback: true,
