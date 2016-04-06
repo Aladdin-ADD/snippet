@@ -106,7 +106,7 @@ var config = {
 if (env === 'development') {
     config.debug = true;
     config.bail = false;
-    config.devtool = '#inline-source-map';
+    config.devtool = '#cheap-module-eval-source-map';
     config.plugins = config.plugins.concat([
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin()
