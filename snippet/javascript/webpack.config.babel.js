@@ -112,6 +112,7 @@ if (env === 'development') {
         new webpack.NoErrorsPlugin()
     ]);
     config.devServer = {
+        host: '0.0.0.0',
         contentBase: path.resolve('./dist'),
         historyApiFallback: true,
         inline: true,
