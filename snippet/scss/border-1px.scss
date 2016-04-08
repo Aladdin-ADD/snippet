@@ -3,23 +3,22 @@
  *      @include hairline(1px solid red);
  *  }
  *  .border-top-only {
- *      @include hairline(0, $top: 1px solid red);
+ *      @include hairline($top: 1px solid red);
  *  }
  *  .border-top-0 {
- *      $include hairline($top: 0);
+ *      $include hairline(1px solid red, $top: 0);
  *  }
  *  .border-radius {
- *      @include hairline($radius: 10px);
+ *      @include hairline(1px solid red, $radius: 10px);
  *  }
  */
 
-$default-hairline-border: 1px solid #000 !default;
-@mixin hairline($all: $default-hairline-border, $radius: 0, $top: none, $right: none, $bottom: none, $left: none) {
+@mixin hairline($all: none, $radius: 0, $top: none, $right: none, $bottom: none, $left: none) {
     position: relative;
 
     &:before {
         border-radius: $radius;
-        border: $all;
+        @if $all != none { border: $all; }
         @if $top != none { border-top: $top; }
         @if $right != none { border-right: $right; }
         @if $bottom != none { border-bottom: $bottom; }
