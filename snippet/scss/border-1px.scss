@@ -15,7 +15,7 @@
 
 @mixin hairline($all: none, $radius: 0, $top: none, $right: none, $bottom: none, $left: none) {
     position: relative;
-    border-radius: $radius;
+    border-radius: $radius / 2;
 
     &:before {
         border-radius: $radius;
