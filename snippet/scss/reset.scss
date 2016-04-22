@@ -1,5 +1,5 @@
 /**
- * https://github.com/10up/sanitize.css/blob/master/sanitize.scss
+ * https://github.com/10up/sanitize.css/blob/master/sanitize.css
  * https://github.com/necolas/normalize.css/blob/master/normalize.css
  * https://github.com/twbs/bootstrap/blob/v4-dev/scss/_reboot.scss
  * https://github.com/suitcss/base/blob/master/lib/base.css
@@ -12,34 +12,33 @@
     padding: 0;
     border: 0;
     outline: 0;
-    background: transparent;
-    box-sizing: border-box;
     font-size: inherit;
     line-height: inherit;
+    box-sizing: border-box;
+    background-repeat: no-repeat;
 }
 
 html {
     height: 100%;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     -webkit-text-size-adjust: 100%;
 }
 
 body {
-    /*font-family: -apple-system, 'Roboto', 'Helvetica Neue', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;*/
-    font-family: sans-serif;
-    font-size: 100%;
-    line-height: 1;
     min-height: 100%;
+    line-height: 1;
     color: #111111;
     background-color: #fffff8;
+    font-size: 100%;
+    font-family: sans-serif;
+    /*font-family: -apple-system, 'Roboto', 'Helvetica Neue', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;*/
 }
 
 :selection {
     background-color: #b3d4fc;
     color: #fff;
-    text-shadow: none;
 }
 
 /* element */
@@ -56,6 +55,7 @@ ul, ol {
     list-style-type: none;
 }
 button, input {
+    background: transparent;
     -webkit-appearance: none;
 }
 textarea {
@@ -67,4 +67,7 @@ i, em {
 table {
     border-collapse: collapse;
     border-spacing: 0;
+}
+[hidden] {
+    display: none;
 }
