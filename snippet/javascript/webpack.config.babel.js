@@ -15,7 +15,7 @@ var entries = glob.sync('./src/**/*.js').reduce(function(coll, file) {
 var config = {
     context: path.resolve('./src'),
     //entry: {
-        //index: ['path/to/index']
+    //index: ['path/to/index']
     //},
     entry: entries,
     output: {
@@ -118,7 +118,11 @@ if (env === 'development') {
         inline: true,
         hot: true,
         stats: {
-            chunks: false
+            colors: true,
+            modules: false,
+            children: false,
+            chunks: false,
+            chunkModules: false
         }
     };
     config.module.preLoaders = undefined;
