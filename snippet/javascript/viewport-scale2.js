@@ -2,17 +2,15 @@
 
 (function(designWidth) {
     'use strict';
-
     var docEl = document.documentElement;
     var setFontSize = function() {
         var width = docEl.clientWidth;
-        var size = Math.ceil(width / designWidth * 100);
-        if (size < 45) size = 45;
-        else if (size > 55) size = 55;
-        while (size % 5 !== 0) size++;
+        var size = width / designWidth * 100;
+        if (size <= 47) size = 45;
+        else if (size <= 52) size = 50;
+        else size = 55;
         docEl.style.fontSize = size + 'px';
     };
-
     window.addEventListener('resize', setFontSize);
     setFontSize();
 })(750);
