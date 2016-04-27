@@ -6,9 +6,7 @@
     var setFontSize = function() {
         var width = docEl.clientWidth;
         var size = width / designWidth * 100;
-        if (size <= 47) size = 45;
-        else if (size <= 52) size = 50;
-        else size = 55;
+        size = (size < 50 ? 45 : 50);
         docEl.style.fontSize = size + 'px';
     };
     window.addEventListener('resize', setFontSize);
