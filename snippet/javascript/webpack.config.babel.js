@@ -122,7 +122,8 @@ if (env === 'development') {
             modules: false,
             children: false,
             chunks: false,
-            chunkModules: false
+            chunkModules: false,
+            errorDetails: false
         }
     };
     config.module.preLoaders = undefined;
