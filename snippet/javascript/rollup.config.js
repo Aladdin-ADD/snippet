@@ -16,7 +16,7 @@ export default {
         json(),
         babel({
             presets: [
-                'es2015-rollup'
+                'es2015-minimal-rollup'
             ]
         }),
         commonjs({

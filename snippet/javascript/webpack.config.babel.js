@@ -51,6 +51,12 @@ var config = {
             ]
         }]
     },
+    babel: {
+        presets: ['es2015-loose'],
+        plugins: [
+            'transform-object-assign'
+        ]
+    },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.optimize.DedupePlugin(),
