@@ -1,0 +1,13 @@
+.wrapper {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+}
+
+.img {
+    min-width: 100%;
+    min-height: 100%;
+    margin-left: 50%;
+    margin-top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
