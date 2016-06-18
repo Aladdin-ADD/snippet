@@ -15,6 +15,8 @@ https://github.com/suitcss/base/blob/master/lib/base.css
     border: 0;
     outline: 0;
     font-size: inherit;
+    font-style: inherit;
+    font-weight: inherit;
     line-height: inherit;
     box-sizing: border-box;
     background-repeat: no-repeat;
@@ -29,6 +31,8 @@ body {
     min-height: 100%;
     line-height: 1;
     font-size: 100%;
+    font-style: normal;
+    font-weight: normal;
     font-family: sans-serif;
     // font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
     text-rendering: optimizeLegibility;
@@ -37,38 +41,7 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 
-body.tufte {
-    color: #111;
-    background-color: #fffff8;
-}
-body.light1 {
-    color: #333;
-    background-color: #fafafa;
-}
-body.light2 {
-    color: #272727;
-    background-color: #fcfcfc;
-}
-body.light3 {
-    color: #383838;
-    background-color: #f8f8f8;
-}
-
-:selection {
-    background-color: #b3d4fc;
-    color: #fff;
-}
-
 /* element */
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-weight: normal;
-}
 
 a {
     text-decoration: none;
@@ -91,14 +64,14 @@ textarea {
     resize: vertical;
 }
 
-i,
-em {
-    font-style: normal;
-}
-
 table {
     border-collapse: collapse;
     border-spacing: 0;
+}
+
+th,
+td {
+    border: 1px solid #000;
 }
 
 [hidden] {
