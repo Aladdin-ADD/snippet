@@ -20,7 +20,6 @@ https://github.com/suitcss/base/blob/master/lib/base.css
     line-height: inherit;
     box-sizing: border-box;
     background-repeat: no-repeat;
-    // max-height: 100%; // fix FontBoosting
 }
 
 html {
@@ -34,7 +33,7 @@ body {
     font-style: normal;
     font-weight: normal;
     font-family: sans-serif;
-    // font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
+    // font-family: 'Helvetica Neue', 'Roboto', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
