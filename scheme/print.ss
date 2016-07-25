@@ -1,3 +1,4 @@
-(define (print . xs)
-  (define (p x) (display x) (newline))
-  (for-each p xs))
+(define (p . xs)
+  (for-each
+    (lambda (x) (display x) (newline))
+    xs))
