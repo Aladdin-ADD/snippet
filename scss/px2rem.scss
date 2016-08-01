@@ -1,0 +1,11 @@
+@function px2rem($px) {
+    @return $px / 100px * 1rem;
+}
+
+html {
+    font-size: 100px;
+}
+
+div {
+    font-size: px2rem(30px);
+}
