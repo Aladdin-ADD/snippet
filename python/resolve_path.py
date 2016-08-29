@@ -5,8 +5,9 @@ import inspect
 
 
 def resolve(path):
-    file = inspect.getsourcefile(inspect.currentframe())
-    curr_dir = os.path.dirname(os.path.abspath(file))
+    #  filename = sys._getframe().f_back.f_code.co_filename
+    file_path = inspect.getabsfile(inspect.currentframe())
+    curr_dir = os.path.dirname(file_path)
     #  curr_dir = os.path.dirname(__file__)
     resolved = os.path.normpath(os.path.join(curr_dir, path))
     return resolved
@@ -14,3 +15,4 @@ def resolve(path):
 
 if __name__ == '__main__':
     print(resolve('.'))
+    print(resolve('../bash'))
