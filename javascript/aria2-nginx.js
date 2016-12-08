@@ -37,28 +37,30 @@
             var params = $$checkbox.filter(function($checkbox) {
                 return $checkbox.checked;
             }).map(function($checkbox) {
-                return $checkbox.value;
-                // return {
-                    // jsonrpc: '2.0',
-                    // id: String(Date.now()),
-                    // method: 'aria2.addUri',
-                    // params: [[$checkbox.value]]
-                // };
+                // return $checkbox.value;
+                return {
+                    jsonrpc: '2.0',
+                    id: String(Date.now()),
+                    method: 'aria2.addUri',
+                    params: [[$checkbox.value]]
+                };
             });
             if (params.length === 0) return;
-            window.q = params.join('\n');
-            // copy(q);
 
-            // var url = 'http://localhost:6800/jsonrpc';
-            // var data = JSON.stringify(params);
+            window.q = params.map((p) => p.params[0]).join('\n');
 
-            // var xhr = new XMLHttpRequest();
-            // xhr.onreadystatechange = function() {
-                // if (xhr.readyState !== 4) return;
-                // console.log(JSON.parse(xhr.responseText));
-            // };
-            // xhr.open('POST', url);
-            // xhr.send(data);
+            var url = 'http://localhost:6800/jsonrpc';
+            var data = JSON.stringify(params);
+
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState !== 4) return;
+                if (xhr.responseText) {
+                    console.log(JSON.parse(xhr.responseText));
+                }
+            };
+            xhr.open('POST', url);
+            xhr.send(data);
         });
     };
 
