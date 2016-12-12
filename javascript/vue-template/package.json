@@ -1,0 +1,41 @@
+{
+  "name": "hotel-fe-pegasus",
+  "version": "0.0.1",
+  "description": "pegasus vue version",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "webpack-dev-server"
+  },
+  "dependencies": {
+    "vue": "2.1.4",
+    "vue-router": "2.1.1",
+    "vuex": "2.0.0",
+    "vuex-router-sync": "3.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "6.5.3",
+    "babel-core": "6.20.0",
+    "babel-eslint": "7.1.1",
+    "babel-helper-vue-jsx-merge-props": "2.0.2",
+    "babel-loader": "6.2.9",
+    "babel-plugin-dynamic-import-webpack": "1.0.1",
+    "babel-plugin-syntax-jsx": "6.18.0",
+    "babel-plugin-transform-vue-jsx": "3.2.0",
+    "babel-preset-env": "1.0.2",
+    "babel-preset-stage-2": "6.18.0",
+    "css-loader": "0.26.1",
+    "eslint": "3.12.0",
+    "eslint-loader": "1.6.1",
+    "glob": "7.1.1",
+    "html-webpack-plugin": "2.24.1",
+    "node-sass": "3.13.1",
+    "progress-bar-webpack-plugin": "1.9.0",
+    "sass-loader": "4.0.2",
+    "vue-loader": "10.0.2",
+    "vue-template-compiler": "2.1.4",
+    "webpack": "beta",
+    "webpack-dev-server": "beta",
+    "webpack-merge": "1.1.1"
+  }
+}

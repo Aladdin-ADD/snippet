@@ -1,0 +1,21 @@
+{
+	"presets": [
+		["env", {
+			"debug": false,
+			"loose": false,
+			"modules": false,
+			"browsers": [
+				"last 5 versions",
+				"> 1%",
+			],
+			"targets": {},
+			"whitelist": []
+		}],
+		"stage-2"
+	],
+	"plugins": [
+		"transform-vue-jsx",
+		"dynamic-import-webpack"
+	],
+	"comments": false
+}
