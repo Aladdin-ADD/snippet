@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import routes from './views/routes.js';
+import routes from './routes.js';
 
 Vue.use(Router);
 
@@ -24,5 +24,12 @@ const router = new Router({
     routes,
     scrollBehavior,
 });
+
+router.beforeEach((to, from, next) => {
+	console.log('before route', to);
+	next();
+});
+
+router.afterEach((to) => (document.title = to.meta.title));
 
 export default router;

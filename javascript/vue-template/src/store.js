@@ -3,13 +3,19 @@ import Vuex from 'vuex';
 
 Vue.use(Vuex);
 
-const store = new Vuex.Store({
+import setup from './utils/vuex-setup-getters.js';
+
+import pages from './utils/router-pages.js';
+
+export const store = setup({
     strict: process.env.NODE_ENV !== 'production',
-    state: {},
+    state: {
+        pages,
+    },
     actions: {},
     mutations: {},
     getters: {},
     modules: {},
 });
 
-export default store;
+export default new Vuex.Store(store);

@@ -39,8 +39,8 @@ const common = {
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name].[chunkhash:6].js',
-        chunkFilename: '[chunkhash:6].js',
+        filename: '[name].[chunkhash:8].js',
+        chunkFilename: '[chunkhash:8].js',
     },
     plugins: (pages.concat([
         new ProgressBarPlugin(),
@@ -65,16 +65,31 @@ const common = {
                     cacheDirectory: true,
                 },
             }],
+		}, {
+            test: /\.css$/,
+            loaders: [{
+                loader: 'style-loader',
+            }, {
+                loader: 'css-loader',
+            }],
         }, {
             test: /\.scss$/,
             loaders: [{
-                loader: 'sass-loader',
+                loader: 'style-loader',
             }, {
                 loader: 'css-loader',
             }, {
-                loader: 'style-loader',
+                loader: 'sass-loader',
             }],
         }, {
+			test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
+			loaders: [{
+				loader: 'file-loader',
+				query: {
+					name: '[hash:8].[ext]',
+				},
+			}],
+		}, {
             test: /\.vue$/,
             loaders: [{
                 loader: 'vue-loader',
@@ -142,7 +157,7 @@ if (env === 'production') {
         output: {
 			publicPath: '/',
             pathinfo: true,
-            filename: '[name].[hash:6].js',
+            filename: '[name].[hash:8].js',
         },
         devtool: 'eval-source-map',
         profile: true,

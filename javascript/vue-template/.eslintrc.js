@@ -31,6 +31,8 @@ module.exports = {
         'no-console': 0,
         'no-unused-vars': [1, {'args': 'none'}],
         'no-constant-condition': [2, {'checkLoops': false}],
-		'no-debugger': 1,
+        'quotes': [2, 'single', {'avoidEscape': true, 'allowTemplateLiterals': true}],
+        'no-unreachable': 1,
+        'no-debugger': 1,
     },
 };
