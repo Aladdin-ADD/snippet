@@ -1,32 +1,29 @@
 const path = require('path');
 const webpack = require('webpack');
+const webpackMerge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const autoprefixer = require('autoprefixer');
-const webpackMerge = require('webpack-merge');
 
+
+/* common */
+const pkg = require('../package.json');
 const common = {
     entry: {
         app: './src/app.js',
-        vendors: [
-            'vue',
-            'vuex',
-            'vue-router',
-            'vuex-router-sync',
-            'superagent',
-            'sanitize.css/sanitize.css',
-            'ramda',
-            'element-ui',
-        ],
+        vendors: Object.keys(pkg.dependencies),
     },
     output: {
         path: path.resolve(__dirname, './dist'),
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
+                X_ENV: JSON.stringify(process.env.X_ENV || 'test'),
+            },
+        }),
         new webpack.ProgressPlugin(),
         new webpack.optimize.CommonsChunkPlugin('vendors'),
-        new webpack.EnvironmentPlugin([
-            'NODE_ENV',
-        ]),
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: './src/template.html',
@@ -84,10 +81,19 @@ const common = {
         hints: false,
     },
 };
+/* ****** */
 
+
+/* production */
+const xEnv = process.env.X_ENV || 'test';
+const publicPath = {
+    'prod': '//prod.example.com/',
+    'staging': '//st.example.com/',
+    'test': '//test.example.com/',
+};
 const prod = {
     output: {
-        publicPath: '/',
+        publicPath: publicPath[xEnv],
         filename: '[name].[chunkhash:8].js',
         chunkFilename: '[chunkhash:8].js',
     },
@@ -114,7 +120,10 @@ const prod = {
     },
     bail: true,
 };
+/* ****** */
 
+
+/* development */
 const dev = {
     output: {
         publicPath: '/',
@@ -123,7 +132,7 @@ const dev = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new webpack.NamedModulesPlugin(),
     ],
     devtool: 'eval-source-map',
@@ -141,14 +150,13 @@ const dev = {
         },
     },
 };
+/* ****** */
 
 
-const env = process.env.NODE_ENV || 'development';
 let conf;
-if (env === 'production') {
+if (process.env.NODE_ENV === 'production') {
     conf = webpackMerge(common, prod);
 } else {
     conf = webpackMerge(common, dev);
 }
-
 module.exports = conf;
