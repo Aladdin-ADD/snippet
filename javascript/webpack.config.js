@@ -19,7 +19,7 @@ const common = {
         new webpack.DefinePlugin({
             'process.env': {
                 NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-                X_ENV: JSON.stringify(process.env.X_ENV || 'test'),
+                TARGET: JSON.stringify(process.env.TARGET || 'test'),
             },
         }),
         new webpack.ProgressPlugin(),
@@ -85,7 +85,7 @@ const common = {
 
 
 /* production */
-const xEnv = process.env.X_ENV || 'test';
+const target = process.env.TARGET || 'test';
 const publicPath = {
     'prod': '//prod.example.com/',
     'staging': '//st.example.com/',
@@ -93,7 +93,7 @@ const publicPath = {
 };
 const prod = {
     output: {
-        publicPath: publicPath[xEnv],
+        publicPath: publicPath[target],
         filename: '[name].[chunkhash:8].js',
         chunkFilename: '[chunkhash:8].js',
     },
