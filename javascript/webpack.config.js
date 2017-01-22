@@ -1,4 +1,5 @@
 const path = require('path');
+const R = require('ramda');
 const webpack = require('webpack');
 const webpackMerge = require('webpack-merge');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -7,10 +8,14 @@ const autoprefixer = require('autoprefixer');
 
 /* common */
 const pkg = require('../package.json');
+const vendors = R.pipe(
+    R.union([]),
+    R.without([])
+)(Object.keys(pkg.dependencies));
 const common = {
     entry: {
         app: './src/app.js',
-        vendors: Object.keys(pkg.dependencies),
+        vendors,
     },
     output: {
         path: path.resolve(__dirname, './dist'),
